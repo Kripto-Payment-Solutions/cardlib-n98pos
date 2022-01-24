@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">mposLib</string>
+    <string name="device_connect_error_desc">Connection device error</string>
+    <string name="device_get_info_error_desc">Get device information error</string>
+    <string name="device_get_transport_session_key_error_desc">Get transfer key error</string>
+    <string name="device_update_master_key_error_desc">Update master key error</string>
+    <string name="device_update_work_key_error_desc">Update work key error</string>
+    <string name="device_add_aid_error_desc">Add AID error</string>
+    <string name="device_add_rid_error_desc">Add RID error</string>
+    <string name="device_get_battery_error_desc">Get battery status error</string>
+    <string name="device_get_card_no_cancel">Cancel card reading</string>
+    <string name="device_get_card_no_fail">Card reading failed</string>
+    <string name="device_get_card_no_timeout">Card reading timeout</string>
+    <string name="device_read_card_cancel">Cancel card swipe</string>
+    <string name="device_read_card_fail">Swipe failed</string>
+    <string name="device_read_card_timeout">Swipe timeout</string>
+    <string name="device_input_info_error_desc">Input information error</string>
+    <string name="device_get_amount_cancel">Cancel input amount</string>
+    <string name="device_get_amount_timeout">Enter the amount of timeout</string>
+    <string name="device_get_pin_error_desc">Read password error</string>
+    <string name="device_get_pin_cancel">Cancel password entry</string>
+    <string name="device_get_pin_timeout">Enter password timeout</string>
+    <string name="device_ic_card_online_process_error_desc">Secondary authorization error</string>
+    <string name="device_cancel_erorr_desc">Cancel transaction error</string>
+    <string name="device_calc_mac_error_desc">Calculate Mac error</string>
+    <string name="device_generate_qrcode_error_desc">QR code generation error</string>
+    <string name="device_save_trade_data_error_desc">Store transaction data error</string>
+    <string name="device_get_trade_data_error_desc">Get transaction data error</string>
+    <string name="device_show_text_error_desc">Display text error</string>
+    <string name="delete_all_aid_error_desc">Delete AID parameter error</string>
+    <string name="delete_all_rid_error_desc">Delete public key parameter error</string>
+    <string name="not_open_file">File not found or failed to open</string>
+    <string name="enter_update_fail">Failed to enter upgrade mode</string>
+    <!--SDKException-->
+    <string name="success">Failed to enter success mode</string>
+    <string name="err_code_cmd_nonsupport">Command code is not supported</string>
+    <string name="err_code_param_error">Parameter error</string>
+    <string name="err_code_variable_lenght">Variable data field length error</string>
+    <string name="err_code_frame_error">Frame format error</string>
+    <string name="err_code_lrc_error">LRC check failed</string>
+    <string name="other">other</string>
+    <string name="err_code_time_out">Timeout, please try again</string>
+    <string name="err_code_cus_status">Return current status</string>
+    <string name="err_code_user_cancel">User canceled</string>
+    <string name="err_code_use_ic">Current system status is not available</string>
+    <string name="err_code_ic_fail">The IC card has been removed and the execution failed.</string>
+    <string name="err_code_encrypt_sn_fail">Encryption sn failed</string>
+    <string name="err_code_sn_key_not_exist">SN key does not exist</string>
+    <string name="err_code_ic_failback">IC card operation error</string>
+    <string name="err_code_ctlsslimit_param_error">Non-connected quota setting failed</string>
+    <string name="err_code_inspection_sign_error">File verification failed</string>
+    <string name="sdk_err_code_param_error">Parameter error</string>
+    <string name="err_code_communicate_error">Abnormal communication</string>
+
+</resources>

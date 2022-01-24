@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dip"
+        android:background="#003366"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/back"
+            android:layout_width="100dip"
+            android:layout_height="40dip"
+            android:background="@drawable/txtback_txtok"
+            android:text="@string/cancel"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textStyle="bold"
+            android:text="@string/search_bluetooth"
+            android:textColor="#ffffff" />
+
+        <Button
+            android:id="@+id/ok"
+            android:layout_width="100dip"
+            android:layout_height="40dip"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/txtback_txtok"
+            android:gravity="center"
+            android:text="@string/stop"
+            android:textColor="#ffffff" />
+    </RelativeLayout>
+</LinearLayout>

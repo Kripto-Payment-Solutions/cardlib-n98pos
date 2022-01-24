@@ -1,0 +1,5 @@
+rootProject.name = "N98 POS Demo App"
+include ':app'
+include ':cardlib-wizarpos'
+include ':mposlib'
+include ':cardlib-n98pos'
