@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp.view;
+package com.kriptops.n98pos.demoapp.view;
 
 import android.app.Activity;
 

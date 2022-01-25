@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp;
+package com.kriptops.n98pos.demoapp;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.kriptops.wizarpos.demoapp", appContext.getPackageName());
+        assertEquals("com.kriptops.n98pos.demoapp", appContext.getPackageName());
     }
 }

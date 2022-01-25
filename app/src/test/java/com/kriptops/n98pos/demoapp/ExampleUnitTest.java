@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp;
+package com.kriptops.n98pos.demoapp;
 
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.kriptops.wizarpos.demoapp">
+    package="com.kriptops.n98pos.demoapp">
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -36,7 +36,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.WizarposDemoApp">
+        android:theme="@style/Theme.N98posDemoApp">
 
 
         <activity android:name=".MainActivity">
@@ -46,7 +46,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.kriptops.wizarpos.demoapp.BluetoothActivity"></activity>
+        <activity android:name="com.kriptops.n98pos.demoapp.BluetoothActivity"></activity>
     </application>
 
 </manifest>

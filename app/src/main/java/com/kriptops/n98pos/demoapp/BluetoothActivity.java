@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp;
+package com.kriptops.n98pos.demoapp;
 
 import android.Manifest;
 //import android.app.ActionBar;
@@ -26,8 +26,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.core.app.ActivityCompat;
 
-import com.kriptops.wizarpos.demoapp.view.Fruit;
-import com.kriptops.wizarpos.demoapp.view.FruitAdapter;
+import com.kriptops.n98pos.demoapp.view.Fruit;
+import com.kriptops.n98pos.demoapp.view.FruitAdapter;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
 import com.newpos.mposlib.sdk.INpSwipeListener;

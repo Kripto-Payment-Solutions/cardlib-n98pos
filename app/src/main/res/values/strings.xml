@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Wizarpos Demo App</string>
+    <string name="app_name">N98POS Demo App</string>
     <string name="title_llaves">Llaves</string>
     <string name="txt_llave_maestra">0123456789ABCDEF</string>
     <string name="txt_llave_pin">Llave de pin</string>

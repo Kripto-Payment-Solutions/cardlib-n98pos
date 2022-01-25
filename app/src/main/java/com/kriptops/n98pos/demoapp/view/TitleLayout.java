@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp.view;
+package com.kriptops.n98pos.demoapp.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.kriptops.wizarpos.demoapp.R;
+import com.kriptops.n98pos.demoapp.R;
 
 /**
  * Created by javaee on 2018/1/3.

@@ -1,4 +1,4 @@
-package com.kriptops.wizarpos.demoapp;
+package com.kriptops.n98pos.demoapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -9,8 +9,6 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -39,8 +37,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-
-//public class MainActivity extends AppCompatActivity implements PosActivity {
 public class MainActivity extends AppCompatActivity {
 
     private EditText masterKey;
@@ -78,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
-        requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
+        //requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
     }
 
     @Override
@@ -161,9 +157,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btn_connect_blue(View btn){
-//        posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
-//        posManager.connectBluetoothDevice(macAdrressN98);
-
         BluetoothApp bluetoothApp = new BluetoothApp(getApplicationContext(),this){
             @Override
             protected void handleMessageClient(Message msg) {
@@ -187,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        
+
         if(!lConnectDevice){
             bluetoothApp.connectDevice(macAdrressN98);
         }else{

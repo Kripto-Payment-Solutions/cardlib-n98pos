@@ -1,10 +1,10 @@
-package com.kriptops.wizarpos.demoapp;
+package com.kriptops.n98pos.demoapp;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.kriptops.wizarpos.demoapp.view.ActivityCollector;
+import com.kriptops.n98pos.demoapp.view.ActivityCollector;
 
 
 /**
