@@ -9,20 +9,24 @@ import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.kriptops.n98pos.cardlib.Defaults;
 import com.kriptops.n98pos.cardlib.EMVConfig;
 import com.kriptops.n98pos.cardlib.Pinpad;
 import com.kriptops.n98pos.cardlib.Pos;
 import com.kriptops.n98pos.cardlib.Printer;
 import com.kriptops.n98pos.cardlib.TransactionData;
+import com.kriptops.n98pos.cardlib.android.BluetoothApp;
+import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.tools.Util;
-import com.kriptops.n98pos.cardlib.android.PosActivity;
 import com.kriptops.n98pos.cardlib.android.PosApp;
 
 import java.security.InvalidKeyException;
@@ -35,11 +39,9 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.newpos.mposlib.sdk.CardInfoEntity;
-
 
 //public class MainActivity extends AppCompatActivity implements PosActivity {
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity {
 
     private EditText masterKey;
     private EditText pinKey;
@@ -48,7 +50,13 @@ public class MainActivity extends AppCompatActivity  {
     private EditText encriptedText;
     private TextView log;
 
+    private Button btnConnectDevice;
+
+    private boolean lConnectDevice = false;
+
     private static final int requestCode = 1;
+
+    private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
 
     //@Override
     public Pos getPos() {
@@ -67,6 +75,8 @@ public class MainActivity extends AppCompatActivity  {
         this.plainText = this.findViewById(R.id.txt_texto_plano);
         this.encriptedText = this.findViewById(R.id.txt_texto_cifrado_hex);
         this.log = this.findViewById(R.id.txt_log);
+
+        this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
         requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
     }
@@ -151,7 +161,39 @@ public class MainActivity extends AppCompatActivity  {
     }
 
     public void btn_connect_blue(View btn){
-        BluetoothActivity.actionStart(MainActivity.this,"This");
+//        posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
+//        posManager.connectBluetoothDevice(macAdrressN98);
+
+        BluetoothApp bluetoothApp = new BluetoothApp(getApplicationContext(),this){
+            @Override
+            protected void handleMessageClient(Message msg) {
+                super.handleMessageClient(msg);
+                Log.d("MainActivityBlue", "handleMessageSafe");
+                switch (msg.what){
+                    case Constant.OPERATTON_RESULT_BLUETOOTH:
+                        Log.d("MainActivityBlue", "OPERATTON_RESULT_BLUETOOTH - " + msg.obj.toString());
+                        switch(msg.obj.toString()){
+                            case "onDeviceConnected":
+                                btnConnectDevice.setText("Disconnect Device");
+                                lConnectDevice = true;
+                                break;
+                            case "onDeviceDisConnected":
+                                btnConnectDevice.setText("Connect Device");
+                                lConnectDevice = false;
+                                break;
+                        }
+                        Toast.makeText(MainActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        };
+        
+        if(!lConnectDevice){
+            bluetoothApp.connectDevice(macAdrressN98);
+        }else{
+            bluetoothApp.disConnectDevice();
+        }
+        //BluetoothActivity.actionStart(MainActivity.this,"This");
     }
 
     public void btn_encriptar(View btn) {

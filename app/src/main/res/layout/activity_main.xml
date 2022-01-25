@@ -159,11 +159,11 @@
                 android:text="Iniciar Transaccion(E)" />
 
             <Button
-                android:id="@+id/button3"
+                android:id="@+id/btn_connect_device"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:onClick="btn_connect_blue"
-                android:text="Connect Transaccion" />
+                android:text="Connect Device" />
 
             <TextView
                 android:id="@+id/txt_log"

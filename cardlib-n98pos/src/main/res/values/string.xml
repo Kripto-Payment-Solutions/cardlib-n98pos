@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wizarpos Demo App</string>
+    <string name="title_llaves">Llaves</string>
+    <string name="txt_llave_maestra">0123456789ABCDEF</string>
+    <string name="txt_llave_pin">Llave de pin</string>
+    <string name="txt_llave_datos">Llave de datos</string>
+    <string name="btn_generar">Generar</string>
+    <string name="btn_inyectar">Inyectar</string>
+    <string name="btn_imprimir">Imprimir</string>
+    <string name="btn_cifrar">Cifrar</string>
+    <string name="hex_digits">0123456789ABCDEF</string>
+    <string name="connect">Connect</string>
+    <string name="cancel">Cancel</string>
+    <string name="search_bluetooth">Search Bluetooth</string>
+    <string name="stop">Stop</string>
+    <string name="connect_bluetooth">Connect Bluetooth</string>
+    <string name="tips">TIPS</string>
+    <string name="device_connect_success">Device Connect Success !</string>
+    <string name="device_disconnect">Device Disconnect !</string>
+    <string name="blue_no_priority">BlueTooth No Authority</string>
+    <string name="request_permission">Request Permission</string>
+</resources>

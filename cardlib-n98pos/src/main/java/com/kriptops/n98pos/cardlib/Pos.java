@@ -38,6 +38,10 @@ public class Pos {
     protected TransactionData data;
     private ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
 
+    /*
+    Conexion Blueetohh
+     */
+
 
     public Pos(PosApp posApp) {
         this(posApp, new PosOptions());
@@ -77,7 +81,6 @@ public class Pos {
         this.pinpad.setTimeout(Defaults.PINPAD_REQUEST_TIMEOUT);
         this.setPinpadCustomUI(false);
     }
-
 
     public void setPinLength(int minLen, int maxLen) {
         this.pinpad.setPinLength(minLen, maxLen);

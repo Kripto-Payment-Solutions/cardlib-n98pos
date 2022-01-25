@@ -161,6 +161,8 @@ public class BluetoothActivity extends BaseActivity implements AdapterView.OnIte
                                 Log.d("Bluetooth", address);
                                 BluetoothDevice bluetoothDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceInfo);
                                 conDevice = bluetoothDevice.getAddress();
+                                Log.d("Device_MacAdress", conDevice);
+                                System.out.println("Device MacAdrress: " + conDevice);
                                 posManager.connectBluetoothDevice(bluetoothDevice.getAddress());
                             }
                         }).start();
