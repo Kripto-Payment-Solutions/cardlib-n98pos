@@ -103,8 +103,8 @@ public class QRCodeUtil {
             canvas.drawBitmap(src, 0.0f, 0.0f, null);
             canvas.scale(scaleFactor, scaleFactor, (float) (srcWidth / 2), (float) (srcHeight / 2));
             canvas.drawBitmap(logo, (float) ((srcWidth - logoWidth) / 2), (float) ((srcHeight - logoHeight) / 2), null);
-            //canvas.save(Canvas.ALL_SAVE_FLAG); //estoy trabaja para la version 26
-            canvas.save(); //estoy trabaja para la version 30
+            //canvas.save(Canvas.ALL_SAVE_FLAG); //esto funciona para la version android 26
+            canvas.save(); //esto funciona para la version android 30
             canvas.restore();
         } catch (Exception e) {
             bitmap = null;

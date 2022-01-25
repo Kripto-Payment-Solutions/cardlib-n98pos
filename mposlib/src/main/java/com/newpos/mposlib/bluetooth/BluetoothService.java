@@ -632,8 +632,7 @@ public class BluetoothService {
 
         registerBluetoothReceiver(context);
         int tryCount = 3;
-        boolean resultAd = mAdapter.startDiscovery();
-        while (!resultAd && tryCount > 0) {
+        while (!mAdapter.startDiscovery() && tryCount > 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {

@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.newpos.mposlib.R;
 import com.newpos.mposlib.api.IBluetoothDevListener;
@@ -232,38 +231,23 @@ public class NpPosManager implements INpPosControler {
     public void updateMasterKey(final String masterKey) {
         LogUtil.e("updateMasterKey ="+masterKey);
         try {
-            byte KEKType =0;//0; //
+            byte KEKType = 0;
             byte index = 1;
             byte[] result = null;
-            if(KEKType==0) {
-                if (masterKey.length() == 24) {
-                    LogUtil.e("updateMasterKey length 24");
-                    byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 16));
-                    byte checkMode = 1;
-                    byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(16, 24));
-                    result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
-                            checkValue);
-                } else if (masterKey.length() == 40) {
-                    LogUtil.e("updateMasterKey length 40");
-                    byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 32));
-                    byte checkMode = 1;
-                    byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(32, 38));
-                    //    checkValue[3]=0x00;
-                    result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
-                            checkValue);
-                }
-            }
-            //for dukpt
-            else if(KEKType==1){
-//IPEK + IKSN
-                LogUtil.e("IPEK=KSN"); //16+10,if encrypt
-                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 52));
-                byte checkMode = 0;
-       //         byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(64, 72));//first 8 byte for IPEK, last 8 byet for IKSN
-  //              result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
-   //                  new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00});//   checkValue);
+            if (masterKey.length() == 24) {
+                LogUtil.e("updateMasterKey length 24");
+                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 16));
+                byte checkMode = 1;
+                byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(16, 24));
                 result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
-                       ISOUtil.hex2byte("B2DE27"));//   checkValue);
+                        checkValue);
+            } else if (masterKey.length() == 40) {
+                LogUtil.e("updateMasterKey length 40");
+                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 32));
+                byte checkMode = 1;
+                byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(32, 40));
+                result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
+                        checkValue);
             }
             LogUtil.e("updateMasterKey result ="+ISOUtil.byte2hex(result));
             if (result != null) {
@@ -667,7 +651,7 @@ public class NpPosManager implements INpPosControler {
                     e.printStackTrace();
                 }
                 cardInfoEntity.setCardType(CardType.MAG_CARD);
-Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
+
                 if (TextUtils.isEmpty(swipeCardResponse.getEncryptedTrack2Data())) {
                     cardInfoEntity.setTrack1(swipeCardResponse.getOneTrack());
                     cardInfoEntity.setTrack2(swipeCardResponse.getTwoTrack());
@@ -903,9 +887,6 @@ Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
             map.put("9F02", cardReadEntity.getAmount());
             map.put("9F1A","0840");//terminal country code
             map.put("5F2A","0840");//transaction currency code
-            map.put("9F41","00000001");
-            map.put("5C","9F119F129B50");
-
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
@@ -926,6 +907,7 @@ Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
                         return;
                     }
                 }
+
                 throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
             } else {
                 if (mListener != null) {
@@ -934,7 +916,6 @@ Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
                     if (TextUtils.equals(executeResult, "00")) {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
-                        Log.e("N98","track2 ="+encTrack2Data);
                         String pan = dataMap.get("5A");
                         if (pan != null) {
                             pan = pan.replace("F", "");
@@ -1131,7 +1112,6 @@ Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
         if (cardReadEntity.getTradeType() == TradeType.SALE) {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
-            map.put("5C","9F119F129B50");
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
@@ -1491,9 +1471,7 @@ Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
         try {
             byte keyIndex = KeyType.MAC;
             byte keyType = 0;
-            byte MACType = 2;
-            //1 for 16 byte data CBC
-            //2 for X9.19
+            byte MACType = 1;
             byte[] data = StringUtil.str2BCD(macData);
             LogUtil.d("d:" + StringUtil.byte2HexStr(data));
             CalMacResponse result = Command.calMAC(keyIndex, keyType, MACType, data);

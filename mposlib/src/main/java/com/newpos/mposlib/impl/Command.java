@@ -1,7 +1,5 @@
 package com.newpos.mposlib.impl;
 
-import android.util.Log;
-
 import com.newpos.mposlib.BuildConfig;
 import com.newpos.mposlib.api.CommandCallback;
 import com.newpos.mposlib.bluetooth.BluetoothService;
@@ -1125,7 +1123,6 @@ public class Command {
     }
 
     public static DeviceSN getDeviceSn(byte[] cardPad) throws SDKException {
-
         byte[] params = new byte[(cardPad.length + 2)];
         byte[] qrcodeDecLen = lenToLLVAR(cardPad.length);
         int pos = 0;
@@ -1174,7 +1171,6 @@ public class Command {
 //                System.arraycopy(result, pos, random, 0, random.length);
                 return data;
             } else {
-                LogUtil.e("responseData ="+responseData.getRespCode());
                 throw new SDKException(responseData.getRespCode());
             }
         } else {
@@ -1223,12 +1219,9 @@ public class Command {
                     byte[] twice = new byte[twiceLen];
                     System.arraycopy(result, pos, twice, 0, twiceLen);
                     pos += twiceLen;
-
-                    String unEncTrack2Data =ISOUtil.byte2hex(twice);// StringUtil.byteToStr(twice);
-                    Log.e("N98","track 2 ="+unEncTrack2Data);
-//                    unEncTrack2Data = unEncTrack2Data.replace("=", "D");
+                    String unEncTrack2Data = StringUtil.byteToStr(twice);
+                    unEncTrack2Data = unEncTrack2Data.replace("=", "D");
                     data.setTwoTrack(unEncTrack2Data);
-
                     int index = unEncTrack2Data.indexOf("D");
                     if (index != -1) {
                         data.setExpiryDate(unEncTrack2Data.substring(index + 1, index + 5));
@@ -1240,27 +1233,16 @@ public class Command {
                     byte[] three = new byte[threeLen];
                     System.arraycopy(result, pos, three, 0, threeLen);
                     pos += threeLen;
-          //          String tdk3 = StringUtil.byteToStr(three).replace("=", "D");
-                    String tdk3 = StringUtil.byteToStr(three);
-                    String unEncTrack3Data =ISOUtil.byte2hex(three);// StringUtil.byteToStr(twice);
-                    Log.e("N98","track 3 ="+unEncTrack3Data);
-                    Log.e("N98","tdk3="+tdk3);
-                    data.setThreeTrack(unEncTrack3Data);
+                    String tdk3 = StringUtil.byteToStr(three).replace("=", "D");
+
+                    data.setThreeTrack(tdk3);
                 }
                 data.setCardType(SwipeCardResponse.CardType.TRACK);
-                int service_code_len=llvarToLen(result[pos++], result[pos++]);
-                if(service_code_len>0){
-                    byte []service_code=new byte[service_code_len];
-                    System.arraycopy(result, pos, service_code, 0, service_code_len);
-                    pos += service_code_len;
-                    //          String tdk3 = StringUtil.byteToStr(three).replace("=", "D");
-                    String servicecode = StringUtil.byteToStr(service_code);
-                    data.setTrack2Servicecode(servicecode);
-                }
+
                 if (pos == result.length) {
                     return data;
                 }
-/**
+
                 int encryptOneLen = llvarToLen(result[pos++], result[pos++]);
                 if (encryptOneLen > 0) {
                     byte[] encryptOne = new byte[encryptOneLen];
@@ -1287,7 +1269,6 @@ public class Command {
                     String encryptTdk3 = StringUtil.byteToStr(encrypt3).replace("=", "D");
                     data.setEncryptedTrack3Data(encryptTdk3);
                 }
- ***/
                 return data;
             } else {
                 throw new SDKException(responseData.getRespCode());

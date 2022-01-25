@@ -29,7 +29,7 @@ public class SwipeCardResponse {
     private int track3Length = 0;
     private String twoTrack = "";
     private String unencryptedTrack2Data = "";
-    private String track2_servicecode;
+
     public String getCarSeq()
     {
         return this.carSeq;
@@ -291,12 +291,6 @@ public class SwipeCardResponse {
 
     public void setEncryptedTrack1Data(String encryptedTrack1Data) {
         this.encryptedTrack1Data = encryptedTrack1Data;
-    }
-    public String getTrack2Servicecode(){
-        return track2_servicecode;
-    }
-    public void setTrack2Servicecode(String code){
-        track2_servicecode=code;
     }
 
 
