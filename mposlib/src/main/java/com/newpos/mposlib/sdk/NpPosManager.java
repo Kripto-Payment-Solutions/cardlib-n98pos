@@ -271,6 +271,47 @@ public class NpPosManager implements INpPosControler {
         }
     }
 
+    public boolean updateKeys(byte []encryptPIN, byte []PINkcv,
+                              byte []encryptMAC, byte []MACkcv,
+                              byte []encryptTrack, byte []TRACKkcv){
+
+        //String pinKeyHex, String pinIvHex, String dataKeyHex, String dataIvHex;
+
+        //TODO Agregar validaciones de parametros
+        //paso 0 tanto el pinkey como el data key deben ser de 32 caracteres hexadecimales
+        //si no cumple emitir illegal argument exception
+
+        //paso 1 convertir el pinKey en un byte array
+        //byte[] pinKey = Util.toByteArray(pinKeyHex);
+        //paso 2 convertir el datakey en un byte array
+        //byte[] dataKey = Util.toByteArray(dataKeyHex);
+
+
+        try {
+
+            this.updateWorkingKey(ISOUtil.byte2hex(encryptPIN)+ISOUtil.byte2hex(PINkcv,0,4),
+                    ISOUtil.byte2hex(encryptMAC)+ISOUtil.byte2hex(MACkcv,0,4),
+                    ISOUtil.byte2hex(encryptTrack)+ISOUtil.byte2hex(TRACKkcv,0,4));
+
+            return true;
+        }catch(Exception e){
+            e.printStackTrace();
+            return false;
+        }
+
+        //inyectar en los slots respectivos, usaremos pin en el slot 0 y data en el slot 1
+        //try {
+        //    this.getDevice().updateUserKey(Defaults.MK_SLOT, Defaults.UK_PIN_SLOT, pinKey);
+        //   this.getDevice().updateUserKey(Defaults.MK_SLOT, Defaults.UK_DATA_SLOT, dataKey);
+        //} catch (DeviceException e) {
+        //    // Log.d(Defaults.LOG_TAG, "No se puede actualizar las llaves", e);
+        //    return false;
+        //}
+
+        //this.ivController.saveIv(IV_DATA, dataIvHex);
+        //this.ivController.saveIv(IV_PIN, pinIvHex);
+    }
+
     /**
      * @param pinKey   PIN密钥密文 + KCV
      * @param macKey   MAC密钥密文 + KCV

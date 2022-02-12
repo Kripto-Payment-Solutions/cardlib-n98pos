@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.kriptops.n98pos.demoapp"
         minSdkVersion 22
-        targetSdkVersion 29
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
 
@@ -39,4 +39,5 @@ dependencies {
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation "org.bouncycastle:bcprov-jdk16:1.46"
 }

@@ -64,6 +64,17 @@
                 android:visibility="visible"
                 tools:visibility="visible" />
 
+            <EditText
+                android:id="@+id/txt_llave_mac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="@string/hex_digits"
+                android:ems="10"
+                android:hint="@string/txt_llave_mac"
+                android:inputType="textPersonName"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

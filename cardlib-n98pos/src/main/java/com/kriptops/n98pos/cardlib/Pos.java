@@ -1,23 +1,43 @@
 package com.kriptops.n98pos.cardlib;
 
+import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.cloudpos.DeviceException;
 import com.cloudpos.OperationResult;
 import com.cloudpos.jniinterface.EMVJNIInterface;
 import com.cloudpos.pinpad.PINPadOperationResult;
 import com.cloudpos.printer.PrinterDevice;
+import com.kriptops.n98pos.cardlib.android.BluetoothApp;
+import com.kriptops.n98pos.cardlib.android.NpSwipe;
 import com.kriptops.n98pos.cardlib.android.PosApp;
 import com.kriptops.n98pos.cardlib.bridge.Terminal;
+import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.crypto.FitMode;
 import com.kriptops.n98pos.cardlib.crypto.PaddingMode;
 import com.kriptops.n98pos.cardlib.db.MapIVController;
 import com.kriptops.n98pos.cardlib.func.BiConsumer;
 import com.kriptops.n98pos.cardlib.func.Consumer;
 import com.kriptops.n98pos.cardlib.tools.Util;
+import com.newpos.mposlib.sdk.CardInfoEntity;
+import com.newpos.mposlib.sdk.CardReadEntity;
+import com.newpos.mposlib.sdk.DeviceInfoEntity;
+import com.newpos.mposlib.sdk.EMVOnlineData;
+import com.newpos.mposlib.sdk.INpPosControler;
+import com.newpos.mposlib.sdk.INpSwipeListener;
+import com.newpos.mposlib.sdk.InputInfoEntity;
+import com.newpos.mposlib.sdk.NpPosManager;
 
-public class Pos {
+import java.lang.ref.WeakReference;
+
+public class Pos implements INpSwipeListener {
 
     private final Terminal terminal;
 
@@ -38,23 +58,311 @@ public class Pos {
     protected TransactionData data;
     private ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
 
-    /*
-    Conexion Blueetohh
-     */
+    protected ClientMessengerHandler mHandler;
+    protected void handleMessageClient(Message msg){}
 
+    private NpPosManager posManager;
+    private PosApp posApp;
+
+//    private INpPosControler mINpPosManager = new INpPosControler() {
+//        @Override
+//        public void scanBlueDevice(int timeOut) {
+//
+//        }
+//
+//        @Override
+//        public void stopScan() {
+//
+//        }
+//
+//        @Override
+//        public void connectBluetoothDevice(String macAddr) {
+//
+//        }
+//
+//        @Override
+//        public boolean isConnected() {
+//            return false;
+//        }
+//
+//        @Override
+//        public void disconnectDevice() {
+//
+//        }
+//
+//        @Override
+//        public void getDeviceInfo() {
+//
+//        }
+//
+//        @Override
+//        public void getTransportSessionKey(String pubkey) {
+//
+//        }
+//
+//        @Override
+//        public void updateMasterKey(String masterKey) {
+//
+//        }
+//
+//        @Override
+//        public void updateWorkingKey(String pinKey, String macKey, String trackKey) {
+//
+//        }
+//
+//        @Override
+//        public void clearAids() {
+//
+//        }
+//
+//        @Override
+//        public void addAid(String aid) {
+//
+//        }
+//
+//        @Override
+//        public void clearRids() {
+//
+//        }
+//
+//        @Override
+//        public void addRid(String rid) {
+//
+//        }
+//
+//        @Override
+//        public void getCardNumber(int timeout) {
+//
+//        }
+//
+//        @Override
+//        public void getCurrentBatteryStatus() {
+//
+//        }
+//
+//        @Override
+//        public void readCard(CardReadEntity cardReadEntity) {
+//
+//        }
+//
+//        @Override
+//        public void getInputInfoFromKB(InputInfoEntity entityInfoEntity) {
+//
+//        }
+//
+//        @Override
+//        public void icCardWriteback(EMVOnlineData onLineData) {
+//
+//        }
+//
+//        @Override
+//        public void cancelTrade() {
+//
+//        }
+//
+//        @Override
+//        public void calculateMac(String macData) {
+//
+//        }
+//
+//        @Override
+//        public void updateFirmware(String filePath) {
+//
+//        }
+//
+//        @Override
+//        public void generateQRCode(int keepShowTime, String content) {
+//
+//        }
+//
+//        @Override
+//        public void setTransactionInfo(String transactionInfo) {
+//
+//        }
+//
+//        @Override
+//        public void getTransactionInfo() {
+//
+//        }
+//
+//        @Override
+//        public void displayTextOnScreen(int keepShowTime, String content) {
+//
+//        }
+//    };
+
+//    private INpSwipeListener mNpSwipeListener = new NpSwipe() {
+//        @Override
+//        public void onScannerResult(BluetoothDevice devInfo) {
+//
+//        }
+//
+//        @Override
+//        public void onDeviceConnected() {
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+//                    Message msg = new Message();
+//                    msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+//                    msg.obj = "onDeviceConnected";
+//                    mHandler.sendMessage(msg);
+//                    Log.d("BluetoothApp", "onDeviceConnected");
+//                    Context context = posApp.getApplicationContext();
+//                    Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
+//
+//        @Override
+//        public void onDeviceDisConnected() {
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Message msg = new Message();
+//                    msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+//                    msg.obj = "onDeviceDisConnected";
+//                    mHandler.sendMessage(msg);
+//                    Log.d("BluetoothApp", "onDeviceDisConnected");
+//                    Context context = posApp.getApplicationContext();
+//                    Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
+//
+//        @Override
+//        public void onGetDeviceInfo(DeviceInfoEntity info) {
+//
+//        }
+//
+//        @Override
+//        public void onGetTransportSessionKey(String encryTransportKey) {
+//
+//        }
+//
+//        @Override
+//        public void onUpdateMasterKeySuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onUpdateWorkingKeySuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onAddAidSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onAddRidSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onClearAids() {
+//
+//        }
+//
+//        @Override
+//        public void onClearRids() {
+//
+//        }
+//
+//        @Override
+//        public void onGetCardNumber(String cardNum) {
+//
+//        }
+//
+//        @Override
+//        public void onGetDeviceBattery(boolean result) {
+//
+//        }
+//
+//        @Override
+//        public void onDetachedIC() {
+//
+//        }
+//
+//        @Override
+//        public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
+//
+//        }
+//
+//        @Override
+//        public void onGetReadInputInfo(String inputInfo) {
+//
+//        }
+//
+//        @Override
+//        public void onGetICCardWriteback(boolean result) {
+//
+//        }
+//
+//        @Override
+//        public void onCancelReadCard() {
+//
+//        }
+//
+//        @Override
+//        public void onGetCalcMacResult(String encryMacData) {
+//
+//        }
+//
+//        @Override
+//        public void onUpdateFirmwareProcess(float percent) {
+//
+//        }
+//
+//        @Override
+//        public void onUpdateFirmwareSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onGenerateQRCodeSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onSetTransactionInfoSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onGetTransactionInfoSuccess(String transactionInfo) {
+//
+//        }
+//
+//        @Override
+//        public void onDisplayTextOnScreenSuccess() {
+//
+//        }
+//
+//        @Override
+//        public void onReceiveErrorCode(int error, String message) {
+//            System.out.println("onReceiverErrorCode");
+//            new Handler(Looper.getMainLooper()).post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    Log.d("Pos","onReceiveErrorCode()");
+//                    Toast.makeText(posApp.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+//                }
+//            });
+//        }
+//    };
 
     public Pos(PosApp posApp) {
         this(posApp, new PosOptions());
-    }
-
-    public void beep() {
-        toneGenerator.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
 
     public Pos(PosApp posApp, PosOptions posOptions) {
         if (posOptions == null) {
             throw new IllegalArgumentException("posOptions is null" );
         }
+
+        this.posApp = posApp;
         // inicializa el manejador de vectores de inicializacion
         // construye el bridge al terminal
         this.terminal = new Terminal();
@@ -72,14 +380,21 @@ public class Pos {
 
         //debe ir antes que la creacion del emv kernel
         this.msr = new Msr(this.terminal.getMsr().getDevice());
-        this.emv = new Emv(this, posApp.getApplicationContext());
+        this.emv = null; //new Emv(this, posApp.getApplicationContext());
         this.pinpad = new Pinpad(this.terminal.getPinpad().getDevice(), this.posOptions.getIvController());
-        this.withPinpad(this::configPinpad);
+        //this.withPinpad(this::configPinpad);
 
         //carga los AID y CAPK por defecto
-        this.setTagList(Defaults.TAG_LIST);
+        //this.setTagList(Defaults.TAG_LIST);
         this.pinpad.setTimeout(Defaults.PINPAD_REQUEST_TIMEOUT);
         this.setPinpadCustomUI(false);
+
+        //Instanciamos el posManager(N98Pos)
+        posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), this);
+    }
+
+    public void beep() {
+        toneGenerator.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
     }
 
     public void setPinLength(int minLen, int maxLen) {
@@ -111,6 +426,14 @@ public class Pos {
                 clTransactionLimit,
                 cvmLimit
         );
+    }
+
+    public void connectDevice(String macAddressN98){
+        posManager.connectBluetoothDevice(macAddressN98);
+    }
+
+    public void disConnectDevice(){
+        posManager.disconnectDevice();
     }
 
     public void configTerminal(EMVConfig config) {
@@ -175,6 +498,25 @@ public class Pos {
             consumer.accept(this.getPinpad());
         } finally {
             if (!wasOpen) this.getPinpad().close();
+        }
+    }
+
+    /**
+     * Realiza una operacion atomica con el PosManager preservando el estado anterior.
+     *
+     * @param consumer
+     */
+    public void withPosManager(Consumer<NpPosManager> consumer) {
+        boolean wasConnectDevice = this.getPosManager().isConnected();
+        try {
+            if (!wasConnectDevice) {
+                //enviar mensaje de conectar al dispositivo bluetooh
+            }
+            consumer.accept(this.getPosManager());
+        } finally {
+            if (!wasConnectDevice) {
+
+            }
         }
     }
 
@@ -389,5 +731,187 @@ public class Pos {
 
     public PosOptions getPosOptions() {
         return posOptions;
+    }
+
+    public NpPosManager getPosManager() {
+        return this.posManager;
+    }
+
+    protected static class ClientMessengerHandler extends Handler{
+
+        private WeakReference<Pos> mActivity;
+
+        public ClientMessengerHandler(Pos activity){
+            mActivity = new WeakReference<Pos>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            System.out.println("[Pos][ClientMessengerHandler] handleMessage: " + msg.toString());
+            Pos activity = mActivity.get();
+            if(activity != null){
+                activity.handleMessageClient(msg);
+            }
+        }
+    }
+
+    @Override
+    public void onScannerResult(BluetoothDevice devInfo) {
+
+    }
+
+    @Override
+    public void onDeviceConnected() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+                Message msg = new Message();
+                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+                msg.obj = "onDeviceConnected";
+                mHandler.sendMessage(msg);
+                Log.d("BluetoothApp", "onDeviceConnected");
+                Context context = posApp.getApplicationContext();
+                Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onDeviceDisConnected() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Message msg = new Message();
+                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+                msg.obj = "onDeviceDisConnected";
+                mHandler.sendMessage(msg);
+                Log.d("BluetoothApp", "onDeviceDisConnected");
+                Context context = posApp.getApplicationContext();
+                Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onGetDeviceInfo(DeviceInfoEntity info) {
+
+    }
+
+    @Override
+    public void onGetTransportSessionKey(String encryTransportKey) {
+
+    }
+
+    @Override
+    public void onUpdateMasterKeySuccess() {
+
+    }
+
+    @Override
+    public void onUpdateWorkingKeySuccess() {
+
+    }
+
+    @Override
+    public void onAddAidSuccess() {
+
+    }
+
+    @Override
+    public void onAddRidSuccess() {
+
+    }
+
+    @Override
+    public void onClearAids() {
+
+    }
+
+    @Override
+    public void onClearRids() {
+
+    }
+
+    @Override
+    public void onGetCardNumber(String cardNum) {
+
+    }
+
+    @Override
+    public void onGetDeviceBattery(boolean result) {
+
+    }
+
+    @Override
+    public void onDetachedIC() {
+
+    }
+
+    @Override
+    public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
+
+    }
+
+    @Override
+    public void onGetReadInputInfo(String inputInfo) {
+
+    }
+
+    @Override
+    public void onGetICCardWriteback(boolean result) {
+
+    }
+
+    @Override
+    public void onCancelReadCard() {
+
+    }
+
+    @Override
+    public void onGetCalcMacResult(String encryMacData) {
+
+    }
+
+    @Override
+    public void onUpdateFirmwareProcess(float percent) {
+
+    }
+
+    @Override
+    public void onUpdateFirmwareSuccess() {
+
+    }
+
+    @Override
+    public void onGenerateQRCodeSuccess() {
+
+    }
+
+    @Override
+    public void onSetTransactionInfoSuccess() {
+
+    }
+
+    @Override
+    public void onGetTransactionInfoSuccess(String transactionInfo) {
+
+    }
+
+    @Override
+    public void onDisplayTextOnScreenSuccess() {
+
+    }
+
+    @Override
+    public void onReceiveErrorCode(int error, String message) {
+        System.out.println("onReceiverErrorCode");
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Pos","onReceiveErrorCode()");
+                Toast.makeText(posApp.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

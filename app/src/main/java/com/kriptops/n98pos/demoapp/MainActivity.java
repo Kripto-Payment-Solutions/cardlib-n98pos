@@ -26,6 +26,8 @@ import com.kriptops.n98pos.cardlib.android.BluetoothApp;
 import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
+import com.kriptops.n98pos.demoapp.utils.TDesUtil;
+import com.newpos.mposlib.util.ISOUtil;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -41,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText masterKey;
     private EditText pinKey;
-    private EditText dataKey;
+    private EditText dataKey; //trackkey
+    private EditText macKey;
     private EditText plainText;
     private EditText encriptedText;
     private TextView log;
@@ -65,16 +68,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         this.masterKey = this.findViewById(R.id.txt_llave_master);
         // Setear con la configuracion de la MK de pruebas asignada
-        this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
+        //this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
+        this.masterKey.setText("7C539EFD77EA6BAB51314BB1BF681C60");
         this.pinKey = this.findViewById(R.id.txt_llave_pin);
         this.dataKey = this.findViewById(R.id.txt_llave_datos);
+        this.macKey = this.findViewById(R.id.txt_llave_mac);
         this.plainText = this.findViewById(R.id.txt_texto_plano);
         this.encriptedText = this.findViewById(R.id.txt_texto_cifrado_hex);
         this.log = this.findViewById(R.id.txt_log);
 
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
-        //requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
+        requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
     }
 
     @Override
@@ -122,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
         dataKey.setText(Util.toHexString(data));
         // Log.d(Defaults.LOG_TAG, "llave de datos " + dataKey.getText());
 
+        r.nextBytes(data);
+        macKey.setText(Util.toHexString(data));
 
         ToneGenerator tone = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
         tone.startTone(ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 200);
@@ -130,19 +137,41 @@ public class MainActivity extends AppCompatActivity {
     public void btn_inyectar_llaves(View btn) {
         // Log.d(Defaults.LOG_TAG, "Inyectar llaves");
         String masterKey = this.masterKey.getText().toString();
+        String pinkey = pinKey.getText().toString();
+        String mackey = macKey.getText().toString();
+        String trackkey = dataKey.getText().toString();
+
         //salida de la call a init en OT
         String ewkPinHex = protectKey(masterKey, pinKey.getText().toString());
         // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
         String ewkDataHex = protectKey(masterKey, dataKey.getText().toString());
-        // Log.d(Defaults.LOG_TAG, "llave de datos " + ewkDataHex);
+        // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
+        String ewkMacHex = protectKey(masterKey, macKey.getText().toString());
+        // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
+
+
+        byte []IV            = ISOUtil.hex2byte("0000000000000000");
+        byte []encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(pinkey));
+        byte []PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey),IV);
+        byte []encryptMAC    = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(mackey));
+        byte []MACkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(mackey),IV);
+        byte []encryptTrack  = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(trackkey));
+        byte []TRACKkcv     = TDesUtil.encryptECB(ISOUtil.hex2byte(trackkey),IV);
 
         boolean [] response = new boolean[1];
-        getPos().withPinpad(pinpad -> {
-            response[0] = pinpad.updateKeys(
-                    ewkPinHex,
-                    ewkDataHex
+
+        getPos().withPosManager(npPosManager -> {
+            response[0] = npPosManager.updateKeys(
+                    encryptPIN,
+                    PINkcv,
+                    encryptMAC,
+                    MACkcv,
+                    encryptTrack,
+                    TRACKkcv
             );
         });
+
+        System.out.println("response[0]: " + response[0]);
 
         this.runOnUiThread(() -> {
             if (response[0]) {
@@ -151,6 +180,19 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "No se puede actualizar llaves", Toast.LENGTH_LONG).show();
             }
         });
+
+//        LogUtil.e("update master key kek ="+KEK);
+//        if(KEK != null){
+//            byte []encrypt=TDesUtil.encryptECB(ISOUtil.hex2byte(KEK),ISOUtil.hex2byte(masterkey));
+//            LogUtil.e("update master key encrypt ="+ISOUtil.byte2hex(encrypt));
+//            byte []IV=ISOUtil.hex2byte("0000000000000000");
+//            byte[]kcv=TDesUtil.encryptECB(ISOUtil.hex2byte(masterkey),IV);
+//            LogUtil.e("update master key kcv ="+ISOUtil.byte2hex(kcv));
+//            posManager.updateMasterKey(ISOUtil.byte2hex(encrypt)+ISOUtil.byte2hex(kcv,0,4));
+//        }
+//        else{
+//            posManager.updateMasterKey("51314BB1BF681C600F80B5E3");
+//        }
     }
 
     public void updateKeys(Pinpad pinpad) {
@@ -182,8 +224,10 @@ public class MainActivity extends AppCompatActivity {
         };
 
         if(!lConnectDevice){
+            //getPos().connectDevice(macAdrressN98);
             bluetoothApp.connectDevice(macAdrressN98);
         }else{
+            //getPos().disConnectDevice();
             bluetoothApp.disConnectDevice();
         }
         //BluetoothActivity.actionStart(MainActivity.this,"This");

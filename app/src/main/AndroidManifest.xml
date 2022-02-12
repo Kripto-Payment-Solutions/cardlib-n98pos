@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kriptops.n98pos.demoapp">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 <!--    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" /> solo se concede permiso en el app-->
@@ -22,6 +23,7 @@
     <uses-permission android:name="android.permission.CLOUDPOS_LED" />
     <uses-permission android:name="android.permission.CLOUDPOS_SAFE_MODULE" />
     <uses-permission android:name="android.permission.CLOUDPOS_HIDE_STATUS_BAR" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WIZARPOS_PIN_LOAD_KEY" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
