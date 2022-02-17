@@ -75,6 +75,8 @@ public class NpPosManager implements INpPosControler {
     private Context mContext;
     private static AidVersion mAidVersion;
 
+    private boolean lUpdateWorkKeys;
+
     private IBluetoothDevListener mIBluetoothDevListener = new IBluetoothDevListener() {
 
         @Override
@@ -132,6 +134,8 @@ public class NpPosManager implements INpPosControler {
 
     private volatile String mMacAddr;
     private volatile String beforeAddr;
+
+    public boolean isUpdateWorkKeys(){ return this.lUpdateWorkKeys; }
 
     @Override
     public void connectBluetoothDevice(String macAddr) {
@@ -288,12 +292,11 @@ public class NpPosManager implements INpPosControler {
 
 
         try {
-
             this.updateWorkingKey(ISOUtil.byte2hex(encryptPIN)+ISOUtil.byte2hex(PINkcv,0,4),
                     ISOUtil.byte2hex(encryptMAC)+ISOUtil.byte2hex(MACkcv,0,4),
                     ISOUtil.byte2hex(encryptTrack)+ISOUtil.byte2hex(TRACKkcv,0,4));
 
-            return true;
+            return this.isUpdateWorkKeys();
         }catch(Exception e){
             e.printStackTrace();
             return false;
@@ -320,6 +323,7 @@ public class NpPosManager implements INpPosControler {
     @Override
     public void updateWorkingKey(String pinKey, String macKey, String trackKey) {
         try {
+            this.lUpdateWorkKeys =  false;
             syncTime();
 
             byte mKeyIndex = 1;
@@ -376,6 +380,7 @@ public class NpPosManager implements INpPosControler {
             if (result != null) {
                 downloadAidOnly();
                 if (mListener != null) {
+                    this.lUpdateWorkKeys =  true;
                     mListener.onUpdateWorkingKeySuccess();
                 }
             } else {
@@ -385,13 +390,18 @@ public class NpPosManager implements INpPosControler {
                         mContext.getString(R.string.device_update_work_key_error_desc));
             }
         } catch (Throwable e) {
+            System.out.println("NpPosManager: " + "Error updateKeys");
             if (LogUtil.DEBUG) {
                 e.printStackTrace();
             }
 //            onError(ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR,
 //                    ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR_DESC);
-            onError(ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR,
-                    mContext.getString(R.string.device_update_work_key_error_desc));
+
+            String error_desc = mContext.getString(R.string.device_update_work_key_error_desc);
+            int error_code =  ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR;
+
+            onError(error_code, error_desc);
+            //throw new SDKException(ERRORS.DEVICE_UPDATE_MASTER_KEY_ERROR_DESC);
         }
     }
 

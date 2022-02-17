@@ -5,10 +5,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -27,6 +31,10 @@ import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
 import com.kriptops.n98pos.demoapp.utils.TDesUtil;
+import com.newpos.mposlib.sdk.CardInfoEntity;
+import com.newpos.mposlib.sdk.DeviceInfoEntity;
+import com.newpos.mposlib.sdk.INpSwipeListener;
+import com.newpos.mposlib.sdk.NpPosManager;
 import com.newpos.mposlib.util.ISOUtil;
 
 import java.security.InvalidKeyException;
@@ -39,7 +47,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements INpSwipeListener {
 
     private EditText masterKey;
     private EditText pinKey;
@@ -56,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int requestCode = 1;
 
     private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
+
+    private NpPosManager posManager;
+    private TestNpManager testNpPosManager;
 
     //@Override
     public Pos getPos() {
@@ -80,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
         requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
+
+        posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
+
+        testNpPosManager = new TestNpManager(getApplicationContext(), this);
     }
 
     @Override
@@ -88,11 +103,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Android 6.0上动态申请蓝牙权限
+     * Android 6.0上动态申请蓝牙权限 -- Solicitar dinámicamente permisos de Bluetooth en
      *
-     * @param activity    当前activity
-     * @param requestCode 请求码
-     * @param showText    若弹Toast提示，需要显示的信息
+     * @param activity    当前activity -- Actual Activity
+     * @param requestCode 请求码 -- código de solicitud
+     * @param showText    若弹Toast提示，需要显示的信息  -- Si se muestra el indicador Toast, la información que se mostrará
      */
     private void requestBtPermission(Activity activity, int requestCode, String showText) {
         if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -160,16 +175,36 @@ public class MainActivity extends AppCompatActivity {
 
         boolean [] response = new boolean[1];
 
-        getPos().withPosManager(npPosManager -> {
-            response[0] = npPosManager.updateKeys(
-                    encryptPIN,
-                    PINkcv,
-                    encryptMAC,
-                    MACkcv,
-                    encryptTrack,
-                    TRACKkcv
-            );
-        });
+        getPos().setContext(getApplicationContext());
+//        response[0] = posManager.updateKeys(
+//                encryptPIN,
+//                PINkcv,
+//                encryptMAC,
+//                MACkcv,
+//                encryptTrack,
+//                TRACKkcv
+//        );
+
+        response[0] = testNpPosManager.updateKeys(
+                encryptPIN,
+                PINkcv,
+                encryptMAC,
+                MACkcv,
+                encryptTrack,
+                TRACKkcv)
+        ;
+
+
+//        getPos().withPosManager(npPosManager -> {
+//            response[0] = npPosManager.updateKeys(
+//                    encryptPIN,
+//                    PINkcv,
+//                    encryptMAC,
+//                    MACkcv,
+//                    encryptTrack,
+//                    TRACKkcv
+//            );
+//        });
 
         System.out.println("response[0]: " + response[0]);
 
@@ -211,6 +246,38 @@ public class MainActivity extends AppCompatActivity {
                             case "onDeviceConnected":
                                 btnConnectDevice.setText("Disconnect Device");
                                 lConnectDevice = true;
+
+                                // Log.d(Defaults.LOG_TAG, "Inyectar llaves");
+                                String sMasterKey = masterKey.getText().toString();
+                                String pinkey = pinKey.getText().toString();
+                                String mackey = macKey.getText().toString();
+                                String trackkey = dataKey.getText().toString();
+
+                                //salida de la call a init en OT
+                                String ewkPinHex = protectKey(sMasterKey, pinKey.getText().toString());
+                                // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
+                                String ewkDataHex = protectKey(sMasterKey, dataKey.getText().toString());
+                                // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
+                                String ewkMacHex = protectKey(sMasterKey, macKey.getText().toString());
+                                // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
+
+
+                                byte []IV            = ISOUtil.hex2byte("0000000000000000");
+                                byte []encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(pinkey));
+                                byte []PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey),IV);
+                                byte []encryptMAC    = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(mackey));
+                                byte []MACkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(mackey),IV);
+                                byte []encryptTrack  = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(trackkey));
+                                byte []TRACKkcv     = TDesUtil.encryptECB(ISOUtil.hex2byte(trackkey),IV);
+
+                                boolean [] response = new boolean[1];
+                                response[0] = this.updateKeys(encryptPIN,
+                                        PINkcv,
+                                        encryptMAC,
+                                        MACkcv,
+                                        encryptTrack,
+                                        TRACKkcv);
+
                                 break;
                             case "onDeviceDisConnected":
                                 btnConnectDevice.setText("Connect Device");
@@ -395,6 +462,167 @@ public class MainActivity extends AppCompatActivity {
                         Util.toByteArray(suppliedKey),
                         Util.toByteArray(data)
                 ));
+    }
+
+
+    @Override
+    public void onScannerResult(BluetoothDevice devInfo) {
+
+    }
+
+    @Override
+    public void onDeviceConnected() {
+//        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//            @Override
+//            public void run() {
+//                //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+//                Message msg = new Message();
+//                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+//                msg.obj = "onDeviceConnected";
+//                mHandler.sendMessage(msg);
+//                Log.d("BluetoothApp", "onDeviceConnected");
+//                Context context = posApp.getApplicationContext();
+//                Toast.makeText(context, context.getText(com.kriptops.n98pos.cardlib.R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+    }
+
+    @Override
+    public void onDeviceDisConnected() {
+//        new Handler(Looper.getMainLooper()).post(new Runnable() {
+//            @Override
+//            public void run() {
+//                Message msg = new Message();
+//                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
+//                msg.obj = "onDeviceDisConnected";
+//                mHandler.sendMessage(msg);
+//                Log.d("BluetoothApp", "onDeviceDisConnected");
+//                Context context = posApp.getApplicationContext();
+//                Toast.makeText(context, context.getText(com.kriptops.n98pos.cardlib.R.string.device_disconnect), Toast.LENGTH_SHORT).show();
+//            }
+//        });
+    }
+
+    @Override
+    public void onGetDeviceInfo(DeviceInfoEntity info) {
+
+    }
+
+    @Override
+    public void onGetTransportSessionKey(String encryTransportKey) {
+
+    }
+
+    @Override
+    public void onUpdateMasterKeySuccess() {
+
+    }
+
+    @Override
+    public void onUpdateWorkingKeySuccess() {
+
+    }
+
+    @Override
+    public void onAddAidSuccess() {
+
+    }
+
+    @Override
+    public void onAddRidSuccess() {
+
+    }
+
+    @Override
+    public void onClearAids() {
+
+    }
+
+    @Override
+    public void onClearRids() {
+
+    }
+
+    @Override
+    public void onGetCardNumber(String cardNum) {
+
+    }
+
+    @Override
+    public void onGetDeviceBattery(boolean result) {
+
+    }
+
+    @Override
+    public void onDetachedIC() {
+
+    }
+
+    @Override
+    public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
+
+    }
+
+    @Override
+    public void onGetReadInputInfo(String inputInfo) {
+
+    }
+
+    @Override
+    public void onGetICCardWriteback(boolean result) {
+
+    }
+
+    @Override
+    public void onCancelReadCard() {
+
+    }
+
+    @Override
+    public void onGetCalcMacResult(String encryMacData) {
+
+    }
+
+    @Override
+    public void onUpdateFirmwareProcess(float percent) {
+
+    }
+
+    @Override
+    public void onUpdateFirmwareSuccess() {
+
+    }
+
+    @Override
+    public void onGenerateQRCodeSuccess() {
+
+    }
+
+    @Override
+    public void onSetTransactionInfoSuccess() {
+
+    }
+
+    @Override
+    public void onGetTransactionInfoSuccess(String transactionInfo) {
+
+    }
+
+    @Override
+    public void onDisplayTextOnScreenSuccess() {
+
+    }
+
+    @Override
+    public void onReceiveErrorCode(int error, String message) {
+        System.out.println("onReceiverErrorCode");
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Log.d("Pos","onReceiveErrorCode()");
+                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
 }

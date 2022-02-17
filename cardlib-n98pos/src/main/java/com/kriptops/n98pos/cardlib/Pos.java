@@ -10,6 +10,8 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
+
 import com.cloudpos.DeviceException;
 import com.cloudpos.OperationResult;
 import com.cloudpos.jniinterface.EMVJNIInterface;
@@ -63,6 +65,12 @@ public class Pos implements INpSwipeListener {
 
     private NpPosManager posManager;
     private PosApp posApp;
+
+    private Context oContext;
+
+    public void setContext(Context context){
+        this.oContext = context;
+    }
 
 //    private INpPosControler mINpPosManager = new INpPosControler() {
 //        @Override
@@ -390,7 +398,8 @@ public class Pos implements INpSwipeListener {
         this.setPinpadCustomUI(false);
 
         //Instanciamos el posManager(N98Pos)
-        posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), this);
+        //posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), this);
+        posManager = NpPosManager.sharedInstance(this.oContext, this);
     }
 
     public void beep() {
@@ -575,9 +584,7 @@ public class Pos implements INpSwipeListener {
         this.beginTransaction(date, time, tsc, amount, false);
     }
 
-
     /// para el control del pinpad
-
     /**
      * Accede al uso del pinpad y coordina su ingreso con funciones del pos
      *
@@ -910,7 +917,7 @@ public class Pos implements INpSwipeListener {
             @Override
             public void run() {
                 Log.d("Pos","onReceiveErrorCode()");
-                Toast.makeText(posApp.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                Toast.makeText(posApp.getApplicationContext(), "ELE: " + message, Toast.LENGTH_SHORT).show();
             }
         });
     }

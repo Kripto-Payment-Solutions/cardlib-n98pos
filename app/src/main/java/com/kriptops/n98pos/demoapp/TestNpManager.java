@@ -1,17 +1,16 @@
-package com.kriptops.n98pos.cardlib.android;
+package com.kriptops.n98pos.demoapp;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Messenger;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.kriptops.n98pos.cardlib.R;
+import com.kriptops.n98pos.cardlib.android.BluetoothApp;
 import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
@@ -19,25 +18,16 @@ import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.NpPosManager;
 import com.newpos.mposlib.util.ISOUtil;
 
-import java.lang.ref.WeakReference;
+public class TestNpManager implements INpSwipeListener {
 
-public class BluetoothApp implements INpSwipeListener {
-    protected ClientMessengerHandler mHandler;
     private Context context;
     private NpPosManager posManager;
     private AppCompatActivity appActivity;
 
-    protected void handleMessageClient(Message msg){}
-
-    public BluetoothApp(Context context, AppCompatActivity appActivity) {
+    public TestNpManager(Context context, AppCompatActivity appActivity) {
         this.context = context;
         this.appActivity = appActivity;
         posManager = NpPosManager.sharedInstance(this.context, this);
-        mHandler = new ClientMessengerHandler(this);
-    }
-
-    public void connectDevice(String macAddressN98){
-        posManager.connectBluetoothDevice(macAddressN98);
     }
 
     public boolean updateKeys(byte []encryptPIN, byte []PINkcv,
@@ -55,10 +45,6 @@ public class BluetoothApp implements INpSwipeListener {
         }
     }
 
-    public void disConnectDevice(){
-        posManager.disconnectDevice();
-    }
-
     @Override
     public void onScannerResult(BluetoothDevice devInfo) {
 
@@ -67,35 +53,11 @@ public class BluetoothApp implements INpSwipeListener {
     @Override
     public void onDeviceConnected() {
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-                Message msg = new Message();
-                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-                msg.obj = "onDeviceConnected";
-                mHandler.sendMessage(msg);
-                Log.d("BluetoothApp", "onDeviceConnected");
-                Toast.makeText(appActivity, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-                //BluetoothActivity.this.finish();
-            }
-        });
     }
 
     @Override
     public void onDeviceDisConnected() {
 
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Message msg = new Message();
-                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-                msg.obj = "onDeviceDisConnected";
-                mHandler.sendMessage(msg);
-                Log.d("BluetoothApp", "onDeviceDisConnected");
-                Toast.makeText(appActivity, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
@@ -210,35 +172,12 @@ public class BluetoothApp implements INpSwipeListener {
 
     @Override
     public void onReceiveErrorCode(int error, String message) {
-        System.out.println("[BluetoothAppy][onReceiveErrorCode]: " + message.toString());
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
-//                Message msg = new Message();
-//                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-//                msg.obj = "onDeviceDisConnected";
-//                mHandler.sendMessage(msg);
-                Log.d("BluetoothApp", "onReceiveErrorCode");
-                Toast.makeText(appActivity, "ENRIQUE: " + context.getText(R.string.device_update_work_key_error_desc), Toast.LENGTH_SHORT).show();
+                Log.d("TestNpManager", "onDeviceDisConnected");
+                Toast.makeText(appActivity, "CAR: " + context.getText(com.kriptops.n98pos.cardlib.R.string.device_update_work_key_error_desc), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    protected static class ClientMessengerHandler extends Handler{
-
-        private WeakReference<BluetoothApp> mActivity;
-
-        public ClientMessengerHandler(BluetoothApp activity){
-            mActivity = new WeakReference<BluetoothApp>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            System.out.println("[BluetoothActivity][ClientMessengerHandler] handleMessage: " + msg.toString());
-            BluetoothApp activity = mActivity.get();
-            if(activity != null){
-                activity.handleMessageClient(msg);
-            }
-        }
     }
 }

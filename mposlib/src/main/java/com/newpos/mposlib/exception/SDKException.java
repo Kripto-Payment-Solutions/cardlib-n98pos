@@ -24,6 +24,7 @@ public class SDKException extends Exception {
     public static final String ERR_CODE_USE_IC = "12";
     public static final String ERR_CODE_VARIABLE_LENGHT = "03";
     public static final String SDK_ERR_CODE_PARAM_ERROR = "92";
+    public static final String ERR_UPDATE_WORK_KEY = "110";
     private static final long serialVersionUID = 1L;
     private String errCode;
 
@@ -108,6 +109,10 @@ public class SDKException extends Exception {
             case 99:
 //                return "通讯异常";
                 return ContextUtils.getContext().getString(R.string.err_code_communicate_error);
+
+            case 110:
+//                return "Update work key error";
+                return "Update work key error";
         }
 
     }
