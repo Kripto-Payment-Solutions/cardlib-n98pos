@@ -116,12 +116,13 @@ public class Pos {
         @Override
         public void onUpdateMasterKeySuccess() {
             Context context = posApp.getApplicationContext();
-            raiseSuccess("onUpdateMasterKeySuccess", context.getText(R.string.device_connect_success).toString());
+            raiseSuccess("onUpdateMasterKeySuccess", context.getText(R.string.update_master_key_success).toString());
         }
 
         @Override
         public void onUpdateWorkingKeySuccess() {
-
+            Context context = posApp.getApplicationContext();
+            raiseSuccess("onUpdateWorkingKeySuccess", context.getText(R.string.update_working_key_success).toString());
         }
 
         @Override

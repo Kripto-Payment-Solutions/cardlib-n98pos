@@ -172,12 +172,12 @@ public class MainActivity extends AppCompatActivity{
             String trackkey = dataKey.getText().toString();
 
             //salida de la call a init en OT
-            String ewkPinHex = protectKey(masterKey, pinKey.getText().toString());
-            // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
-            String ewkDataHex = protectKey(masterKey, dataKey.getText().toString());
-            // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
-            String ewkMacHex = protectKey(masterKey, macKey.getText().toString());
-            // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
+//            String ewkPinHex = protectKey(masterKey, pinKey.getText().toString());
+//            // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
+//            String ewkDataHex = protectKey(masterKey, dataKey.getText().toString());
+//            // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
+//            String ewkMacHex = protectKey(masterKey, macKey.getText().toString());
+//            // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
 
             pinkey      = "6CEBADBA69612480FC2FC331D291B0F1"; //clear key
             mackey      = "23BC72AC94C03BD34D9E6BCB1AB3F950"; //clear key
@@ -376,7 +376,6 @@ public class MainActivity extends AppCompatActivity{
                                 Toast.makeText(getApplicationContext(), "[error ]onDeviceConnected[generateRSAKeyPair]: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                             }
                         });
-
                     }
 
                     break;
@@ -407,6 +406,16 @@ public class MainActivity extends AppCompatActivity{
                         @Override
                         public void run() {
                             LogUtil.d("onUpdateMasterKeySuccess","onUpdateMasterKeySuccess()");
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+
+                case "onUpdateWorkingKeySuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onUpdateWorkingKeySuccess","onUpdateWorkingKeySuccess()");
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
                         }
                     });

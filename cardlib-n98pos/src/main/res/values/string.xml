@@ -20,4 +20,6 @@
     <string name="device_disconnect">Device Disconnect !</string>
     <string name="blue_no_priority">BlueTooth No Authority</string>
     <string name="request_permission">Request Permission</string>
+    <string name="update_master_key_success">Update Master Key Success</string>
+    <string name="update_working_key_success">Update Working Key Success</string>
 </resources>

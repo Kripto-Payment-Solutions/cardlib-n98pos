@@ -22,4 +22,6 @@
     <string name="request_permission">Request Permission</string>
     <string name="kek_unpack_fail">KEK Unpack Fail</string>
     <string name="kek_unpack_success">KEK Unpack Success</string>
+    <string name="update_master_key_success">Update Master Key Success</string>
+    <string name="update_working_key_success">Update Working Key Success</string>
 </resources>
