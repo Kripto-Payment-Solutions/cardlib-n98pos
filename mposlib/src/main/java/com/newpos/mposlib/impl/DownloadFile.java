@@ -19,7 +19,7 @@ public class DownloadFile {
     private boolean isExist = false;
     private int step;
     private int lastPro = 0;
-    private int loadLen = 1000;//450;
+    private int loadLen = 1000;//1000;//450;
     private int expectedOffset = 0;
 
     public DownloadFile() {

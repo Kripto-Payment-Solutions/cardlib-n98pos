@@ -36,10 +36,14 @@ import com.newpos.mposlib.sdk.INpPosControler;
 import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.InputInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
+import com.newpos.mposlib.util.ISOUtil;
 
 import java.lang.ref.WeakReference;
+import java.security.PrivateKey;
 
-public class Pos implements INpSwipeListener {
+import javax.crypto.Cipher;
+
+public class Pos {
 
     private final Terminal terminal;
 
@@ -55,311 +59,174 @@ public class Pos implements INpSwipeListener {
     private Runnable onPinCaptured;
     private BiConsumer<String, String> onError;
     private BiConsumer<String, String> onWarning;
+    private BiConsumer<String, String> onSuccess;
     private Consumer<Integer> digitsListener;
     private Consumer<TransactionData> goOnline;
     protected TransactionData data;
     private ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
 
-    protected ClientMessengerHandler mHandler;
-    protected void handleMessageClient(Message msg){}
-
     private NpPosManager posManager;
     private PosApp posApp;
 
-    private Context oContext;
+    private INpSwipeListener mNpSwipeListener = new INpSwipeListener() {
+        @Override
+        public void onScannerResult(BluetoothDevice devInfo) {
+        }
 
-    public void setContext(Context context){
-        this.oContext = context;
-    }
+        @Override
+        public void onDeviceConnected() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Context context = posApp.getApplicationContext();
+                    Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
+                    raiseSuccess("onDeviceConnected", context.getText(R.string.device_connect_success).toString());
+                }
+            });
+        }
 
-//    private INpPosControler mINpPosManager = new INpPosControler() {
-//        @Override
-//        public void scanBlueDevice(int timeOut) {
-//
-//        }
-//
-//        @Override
-//        public void stopScan() {
-//
-//        }
-//
-//        @Override
-//        public void connectBluetoothDevice(String macAddr) {
-//
-//        }
-//
-//        @Override
-//        public boolean isConnected() {
-//            return false;
-//        }
-//
-//        @Override
-//        public void disconnectDevice() {
-//
-//        }
-//
-//        @Override
-//        public void getDeviceInfo() {
-//
-//        }
-//
-//        @Override
-//        public void getTransportSessionKey(String pubkey) {
-//
-//        }
-//
-//        @Override
-//        public void updateMasterKey(String masterKey) {
-//
-//        }
-//
-//        @Override
-//        public void updateWorkingKey(String pinKey, String macKey, String trackKey) {
-//
-//        }
-//
-//        @Override
-//        public void clearAids() {
-//
-//        }
-//
-//        @Override
-//        public void addAid(String aid) {
-//
-//        }
-//
-//        @Override
-//        public void clearRids() {
-//
-//        }
-//
-//        @Override
-//        public void addRid(String rid) {
-//
-//        }
-//
-//        @Override
-//        public void getCardNumber(int timeout) {
-//
-//        }
-//
-//        @Override
-//        public void getCurrentBatteryStatus() {
-//
-//        }
-//
-//        @Override
-//        public void readCard(CardReadEntity cardReadEntity) {
-//
-//        }
-//
-//        @Override
-//        public void getInputInfoFromKB(InputInfoEntity entityInfoEntity) {
-//
-//        }
-//
-//        @Override
-//        public void icCardWriteback(EMVOnlineData onLineData) {
-//
-//        }
-//
-//        @Override
-//        public void cancelTrade() {
-//
-//        }
-//
-//        @Override
-//        public void calculateMac(String macData) {
-//
-//        }
-//
-//        @Override
-//        public void updateFirmware(String filePath) {
-//
-//        }
-//
-//        @Override
-//        public void generateQRCode(int keepShowTime, String content) {
-//
-//        }
-//
-//        @Override
-//        public void setTransactionInfo(String transactionInfo) {
-//
-//        }
-//
-//        @Override
-//        public void getTransactionInfo() {
-//
-//        }
-//
-//        @Override
-//        public void displayTextOnScreen(int keepShowTime, String content) {
-//
-//        }
-//    };
+        @Override
+        public void onDeviceDisConnected() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Context context = posApp.getApplicationContext();
+                    Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
+                    raiseSuccess("onDeviceDisConnected", context.getText(R.string.device_disconnect).toString());
 
-//    private INpSwipeListener mNpSwipeListener = new NpSwipe() {
-//        @Override
-//        public void onScannerResult(BluetoothDevice devInfo) {
-//
-//        }
-//
-//        @Override
-//        public void onDeviceConnected() {
-//            new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-//                    Message msg = new Message();
-//                    msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-//                    msg.obj = "onDeviceConnected";
-//                    mHandler.sendMessage(msg);
-//                    Log.d("BluetoothApp", "onDeviceConnected");
-//                    Context context = posApp.getApplicationContext();
-//                    Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public void onDeviceDisConnected() {
-//            new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Message msg = new Message();
-//                    msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-//                    msg.obj = "onDeviceDisConnected";
-//                    mHandler.sendMessage(msg);
-//                    Log.d("BluetoothApp", "onDeviceDisConnected");
-//                    Context context = posApp.getApplicationContext();
-//                    Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }
-//
-//        @Override
-//        public void onGetDeviceInfo(DeviceInfoEntity info) {
-//
-//        }
-//
-//        @Override
-//        public void onGetTransportSessionKey(String encryTransportKey) {
-//
-//        }
-//
-//        @Override
-//        public void onUpdateMasterKeySuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onUpdateWorkingKeySuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onAddAidSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onAddRidSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onClearAids() {
-//
-//        }
-//
-//        @Override
-//        public void onClearRids() {
-//
-//        }
-//
-//        @Override
-//        public void onGetCardNumber(String cardNum) {
-//
-//        }
-//
-//        @Override
-//        public void onGetDeviceBattery(boolean result) {
-//
-//        }
-//
-//        @Override
-//        public void onDetachedIC() {
-//
-//        }
-//
-//        @Override
-//        public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
-//
-//        }
-//
-//        @Override
-//        public void onGetReadInputInfo(String inputInfo) {
-//
-//        }
-//
-//        @Override
-//        public void onGetICCardWriteback(boolean result) {
-//
-//        }
-//
-//        @Override
-//        public void onCancelReadCard() {
-//
-//        }
-//
-//        @Override
-//        public void onGetCalcMacResult(String encryMacData) {
-//
-//        }
-//
-//        @Override
-//        public void onUpdateFirmwareProcess(float percent) {
-//
-//        }
-//
-//        @Override
-//        public void onUpdateFirmwareSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onGenerateQRCodeSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onSetTransactionInfoSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onGetTransactionInfoSuccess(String transactionInfo) {
-//
-//        }
-//
-//        @Override
-//        public void onDisplayTextOnScreenSuccess() {
-//
-//        }
-//
-//        @Override
-//        public void onReceiveErrorCode(int error, String message) {
-//            System.out.println("onReceiverErrorCode");
-//            new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    Log.d("Pos","onReceiveErrorCode()");
-//                    Toast.makeText(posApp.getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-//                }
-//            });
-//        }
-//    };
+                }
+            });
+        }
+
+        @Override
+        public void onGetDeviceInfo(DeviceInfoEntity info) {
+
+        }
+
+        @Override
+        public void onGetTransportSessionKey(String encryTransportKey) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    raiseSuccess("onGetTransportSessionKey", encryTransportKey);
+                }
+            });
+        }
+
+        @Override
+        public void onUpdateMasterKeySuccess() {
+            Context context = posApp.getApplicationContext();
+            raiseSuccess("onUpdateMasterKeySuccess", context.getText(R.string.device_connect_success).toString());
+        }
+
+        @Override
+        public void onUpdateWorkingKeySuccess() {
+
+        }
+
+        @Override
+        public void onAddAidSuccess() {
+
+        }
+
+        @Override
+        public void onAddRidSuccess() {
+
+        }
+
+        @Override
+        public void onClearAids() {
+
+        }
+
+        @Override
+        public void onClearRids() {
+
+        }
+
+        @Override
+        public void onGetCardNumber(String cardNum) {
+
+        }
+
+        @Override
+        public void onGetDeviceBattery(boolean result) {
+
+        }
+
+        @Override
+        public void onDetachedIC() {
+
+        }
+
+        @Override
+        public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
+
+        }
+
+        @Override
+        public void onGetReadInputInfo(String inputInfo) {
+
+        }
+
+        @Override
+        public void onGetICCardWriteback(boolean result) {
+
+        }
+
+        @Override
+        public void onCancelReadCard() {
+
+        }
+
+        @Override
+        public void onGetCalcMacResult(String encryMacData) {
+
+        }
+
+        @Override
+        public void onUpdateFirmwareProcess(float percent) {
+
+        }
+
+        @Override
+        public void onUpdateFirmwareSuccess() {
+
+        }
+
+        @Override
+        public void onGenerateQRCodeSuccess() {
+
+        }
+
+        @Override
+        public void onSetTransactionInfoSuccess() {
+
+        }
+
+        @Override
+        public void onGetTransactionInfoSuccess(String transactionInfo) {
+
+        }
+
+        @Override
+        public void onDisplayTextOnScreenSuccess() {
+
+        }
+
+        @Override
+        public void onReceiveErrorCode(int error, String message) {
+            System.out.println("onReceiverErrorCode custom listener");
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d("Pos","onReceiveErrorCode()");
+                    Toast.makeText(posApp.getApplicationContext(), "[onReceiveErrorCode]: " + message, Toast.LENGTH_SHORT).show();
+                    raiseError("onReceiveErrorCode", message);
+                }
+            });
+        }
+    };
 
     public Pos(PosApp posApp) {
         this(posApp, new PosOptions());
@@ -398,8 +265,7 @@ public class Pos implements INpSwipeListener {
         this.setPinpadCustomUI(false);
 
         //Instanciamos el posManager(N98Pos)
-        //posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), this);
-        posManager = NpPosManager.sharedInstance(this.oContext, this);
+        posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), mNpSwipeListener);
     }
 
     public void beep() {
@@ -437,7 +303,7 @@ public class Pos implements INpSwipeListener {
         );
     }
 
-    public void connectDevice(String macAddressN98){
+    public void connectBTDevice(String macAddressN98){
         posManager.connectBluetoothDevice(macAddressN98);
     }
 
@@ -687,18 +553,37 @@ public class Pos implements INpSwipeListener {
         this.onError = onError;
     }
 
+    /**
+     * Configura el evento de escucha cuando un evento a culminado correctamente.
+     *
+     * @param onSuccess
+     */
+    public void setOnSuccess(BiConsumer<String, String> onSuccess) {
+        this.onSuccess = onSuccess;
+    }
+
+    /**
+     * Configura el evento de escucha cuando se ha producido una alerta en un proceso.
+     *
+     * @param onWarning
+     */
+    public void setOnWarning(BiConsumer<String, String> onWarning) {
+        this.onWarning = onWarning;
+    }
+
     protected void raiseError(String source, String payload) {
         // Log.d(Defaults.LOG_TAG, "error: " + source + " " + payload);
         if (this.onError != null) onError.accept(source, payload);
     }
 
-    public void setOnWarning(BiConsumer<String, String> onWarning) {
-        this.onWarning = onWarning;
-    }
-
     protected void raiseWarning(String source, String payload) {
         // Log.d(Defaults.LOG_TAG, "warning: " + source + " " + payload);
         if (this.onWarning != null) onWarning.accept(source, payload);
+    }
+
+    protected void raiseSuccess(String source, String payload) {
+        // Log.d(Defaults.LOG_TAG, "Success: " + source + " " + payload);
+        if (this.onSuccess != null) onSuccess.accept(source, payload);
     }
 
     protected boolean isPinpadCustomUI() {
@@ -742,183 +627,5 @@ public class Pos implements INpSwipeListener {
 
     public NpPosManager getPosManager() {
         return this.posManager;
-    }
-
-    protected static class ClientMessengerHandler extends Handler{
-
-        private WeakReference<Pos> mActivity;
-
-        public ClientMessengerHandler(Pos activity){
-            mActivity = new WeakReference<Pos>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            System.out.println("[Pos][ClientMessengerHandler] handleMessage: " + msg.toString());
-            Pos activity = mActivity.get();
-            if(activity != null){
-                activity.handleMessageClient(msg);
-            }
-        }
-    }
-
-    @Override
-    public void onScannerResult(BluetoothDevice devInfo) {
-
-    }
-
-    @Override
-    public void onDeviceConnected() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-                Message msg = new Message();
-                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-                msg.obj = "onDeviceConnected";
-                mHandler.sendMessage(msg);
-                Log.d("BluetoothApp", "onDeviceConnected");
-                Context context = posApp.getApplicationContext();
-                Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @Override
-    public void onDeviceDisConnected() {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Message msg = new Message();
-                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-                msg.obj = "onDeviceDisConnected";
-                mHandler.sendMessage(msg);
-                Log.d("BluetoothApp", "onDeviceDisConnected");
-                Context context = posApp.getApplicationContext();
-                Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    @Override
-    public void onGetDeviceInfo(DeviceInfoEntity info) {
-
-    }
-
-    @Override
-    public void onGetTransportSessionKey(String encryTransportKey) {
-
-    }
-
-    @Override
-    public void onUpdateMasterKeySuccess() {
-
-    }
-
-    @Override
-    public void onUpdateWorkingKeySuccess() {
-
-    }
-
-    @Override
-    public void onAddAidSuccess() {
-
-    }
-
-    @Override
-    public void onAddRidSuccess() {
-
-    }
-
-    @Override
-    public void onClearAids() {
-
-    }
-
-    @Override
-    public void onClearRids() {
-
-    }
-
-    @Override
-    public void onGetCardNumber(String cardNum) {
-
-    }
-
-    @Override
-    public void onGetDeviceBattery(boolean result) {
-
-    }
-
-    @Override
-    public void onDetachedIC() {
-
-    }
-
-    @Override
-    public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
-
-    }
-
-    @Override
-    public void onGetReadInputInfo(String inputInfo) {
-
-    }
-
-    @Override
-    public void onGetICCardWriteback(boolean result) {
-
-    }
-
-    @Override
-    public void onCancelReadCard() {
-
-    }
-
-    @Override
-    public void onGetCalcMacResult(String encryMacData) {
-
-    }
-
-    @Override
-    public void onUpdateFirmwareProcess(float percent) {
-
-    }
-
-    @Override
-    public void onUpdateFirmwareSuccess() {
-
-    }
-
-    @Override
-    public void onGenerateQRCodeSuccess() {
-
-    }
-
-    @Override
-    public void onSetTransactionInfoSuccess() {
-
-    }
-
-    @Override
-    public void onGetTransactionInfoSuccess(String transactionInfo) {
-
-    }
-
-    @Override
-    public void onDisplayTextOnScreenSuccess() {
-
-    }
-
-    @Override
-    public void onReceiveErrorCode(int error, String message) {
-        System.out.println("onReceiverErrorCode");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("Pos","onReceiveErrorCode()");
-                Toast.makeText(posApp.getApplicationContext(), "ELE: " + message, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

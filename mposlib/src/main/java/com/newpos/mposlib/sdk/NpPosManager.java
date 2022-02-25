@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.newpos.mposlib.R;
 import com.newpos.mposlib.api.IBluetoothDevListener;
@@ -217,42 +218,67 @@ public class NpPosManager implements INpPosControler {
                     mListener.onGetTransportSessionKey(result);
                 }
             } else {
-//                onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR,ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR_DESC);
-                onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR,
-                        mContext.getString(R.string.device_get_transport_session_key_error_desc));
+                onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR, mContext.getString(R.string.device_get_transport_session_key_error_desc));
             }
         } catch (Throwable e) {
             if (LogUtil.DEBUG) {
                 e.printStackTrace();
             }
-//            onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR, ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR_DESC);
-            onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR,
-                    mContext.getString(R.string.device_get_transport_session_key_error_desc));
+
+            onError(ERRORS.DEVICE_GET_TRANSPORT_SESSION_KEY_ERROR, mContext.getString(R.string.device_get_transport_session_key_error_desc));
         }
     }
 
     @Override
     public void updateMasterKey(final String masterKey) {
+        byte KEKType ;
         LogUtil.e("updateMasterKey ="+masterKey);
+        if(masterKey.length() > 40){
+            KEKType = 1;
+        }else{
+            KEKType = 0;
+        }
         try {
-            byte KEKType = 0;
-            byte index = 1;
+            byte index ;
             byte[] result = null;
-            if (masterKey.length() == 24) {
-                LogUtil.e("updateMasterKey length 24");
-                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 16));
-                byte checkMode = 1;
-                byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(16, 24));
+            if(KEKType==0) {
+                index = KeyType.MASTERKEY;
+                if (masterKey.length() == 24) {
+                    LogUtil.e("updateMasterKey length 24");
+                    byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 16));
+                    byte checkMode = 1;
+                    byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(16, 24));
+                    result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
+                            checkValue);
+                } else if (masterKey.length() == 40) {
+                    LogUtil.e("updateMasterKey length 40");
+                    byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 32));
+                    byte checkMode = 1;
+                    byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(32, 40));
+                    result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
+                            checkValue);
+                }
+            } else if(KEKType==1){
+                //for dukpt
+                //IPEK + IKSN
+                LogUtil.e("IPEK + KSN"); //16+10
+                index = KeyType.DUKPTKEY;
+                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 52));
+                byte checkMode = 0;
+                byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(52, 60));
                 result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
                         checkValue);
-            } else if (masterKey.length() == 40) {
-                LogUtil.e("updateMasterKey length 40");
-                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 32));
-                byte checkMode = 1;
-                byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(32, 40));
+            }/*{
+//IPEK + IKSN
+                LogUtil.e("IPEK=KSN"); //16+10,if encrypt
+                byte[] masterKeyBytes = StringUtil.hexStr2Bytes(masterKey.substring(0, 52));
+                byte checkMode = 0;
+       //         byte[] checkValue = StringUtil.hexStr2Bytes(masterKey.substring(64, 72));//first 8 byte for IPEK, last 8 byet for IKSN
+  //              result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
+   //                  new byte[]{0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00});//   checkValue);
                 result = Command.loadMasterKey(KEKType, index, masterKeyBytes, checkMode,
-                        checkValue);
-            }
+                       ISOUtil.hex2byte("B2DE27"));//   checkValue);
+            }*/
             LogUtil.e("updateMasterKey result ="+ISOUtil.byte2hex(result));
             if (result != null) {
                 if (mListener != null) {
@@ -326,7 +352,7 @@ public class NpPosManager implements INpPosControler {
             this.lUpdateWorkKeys =  false;
             syncTime();
 
-            byte mKeyIndex = 1;
+            byte mainKeyIndex = KeyType.MASTERKEY;
             byte checkMode = 1;
             byte[] result = null;
             if (pinKey != null) {
@@ -335,12 +361,12 @@ public class NpPosManager implements INpPosControler {
                 if (pinKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(pinKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(pinKey.substring(16, 24));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 } else if (pinKey.length() == 40) {
                     byte[] wKey = StringUtil.hexStr2Bytes(pinKey.substring(0, 32));
                     byte[] checkValue = StringUtil.hexStr2Bytes(pinKey.substring(32, 40));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
             }
@@ -351,12 +377,12 @@ public class NpPosManager implements INpPosControler {
                 if (macKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(macKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(macKey.substring(16, 24));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 } else if (macKey.length() == 40) {
                     byte[] wKey = StringUtil.hexStr2Bytes(macKey.substring(0, 32));
                     byte[] checkValue = StringUtil.hexStr2Bytes(macKey.substring(32, 40));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
             }
@@ -367,12 +393,12 @@ public class NpPosManager implements INpPosControler {
                 if (trackKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(trackKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(trackKey.substring(16, 24));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 } else if (trackKey.length() == 40) {
                     byte[] wKey = StringUtil.hexStr2Bytes(trackKey.substring(0, 32));
                     byte[] checkValue = StringUtil.hexStr2Bytes(trackKey.substring(32, 40));
-                    result = Command.loadWorkKey(keyType, mKeyIndex, wKeyIndex, wKey,
+                    result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
             }
@@ -390,18 +416,13 @@ public class NpPosManager implements INpPosControler {
                         mContext.getString(R.string.device_update_work_key_error_desc));
             }
         } catch (Throwable e) {
-            System.out.println("NpPosManager: " + "Error updateKeys");
             if (LogUtil.DEBUG) {
                 e.printStackTrace();
             }
 //            onError(ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR,
 //                    ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR_DESC);
-
-            String error_desc = mContext.getString(R.string.device_update_work_key_error_desc);
-            int error_code =  ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR;
-
-            onError(error_code, error_desc);
-            //throw new SDKException(ERRORS.DEVICE_UPDATE_MASTER_KEY_ERROR_DESC);
+            onError(ERRORS.DEVICE_UPDATE_WORK_KEY_ERROR,
+                    mContext.getString(R.string.device_update_work_key_error_desc));
         }
     }
 
@@ -497,8 +518,8 @@ public class NpPosManager implements INpPosControler {
         CardReadEntity cardReadEntity = new CardReadEntity();
         cardReadEntity.setSupportFallback(false);
         cardReadEntity.setTimeout(timeout);
-        cardReadEntity.setAmount("000000000000");
-        cardReadEntity.setTradeType(TYPE_READ_CARD_NUMBER);
+        cardReadEntity.setAmount("000000080000");
+        cardReadEntity.setTradeType(TYPE_SALE);
         readCard(cardReadEntity);
     }
 
@@ -604,7 +625,7 @@ public class NpPosManager implements INpPosControler {
 
         try {
             checkEmvParams();
-            byte type = 7;
+            byte type = (byte)cardReadEntity.getTradeType();
             byte tmo = (byte) cardReadEntity.getTimeout();
             byte[] message = ConstantStr.Tips.READ_CARD_TIPS.getBytes("GBK");
             byte fallback = 1;
@@ -702,7 +723,7 @@ public class NpPosManager implements INpPosControler {
                     e.printStackTrace();
                 }
                 cardInfoEntity.setCardType(CardType.MAG_CARD);
-
+Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
                 if (TextUtils.isEmpty(swipeCardResponse.getEncryptedTrack2Data())) {
                     cardInfoEntity.setTrack1(swipeCardResponse.getOneTrack());
                     cardInfoEntity.setTrack2(swipeCardResponse.getTwoTrack());
@@ -938,6 +959,9 @@ public class NpPosManager implements INpPosControler {
             map.put("9F02", cardReadEntity.getAmount());
             map.put("9F1A","0840");//terminal country code
             map.put("5F2A","0840");//transaction currency code
+            map.put("9F41","00000001");
+            map.put("5C","9F119F129B50");
+
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
@@ -958,7 +982,6 @@ public class NpPosManager implements INpPosControler {
                         return;
                     }
                 }
-
                 throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
             } else {
                 if (mListener != null) {
@@ -967,6 +990,7 @@ public class NpPosManager implements INpPosControler {
                     if (TextUtils.equals(executeResult, "00")) {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
+                        Log.e("N98","track2 ="+encTrack2Data);
                         String pan = dataMap.get("5A");
                         if (pan != null) {
                             pan = pan.replace("F", "");
@@ -1163,6 +1187,9 @@ public class NpPosManager implements INpPosControler {
         if (cardReadEntity.getTradeType() == TradeType.SALE) {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
+            map.put("9F03","000000000000");
+            map.put("5F2A","0860");
+            //map.put("5C","9F119F129B50");
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
@@ -1522,7 +1549,9 @@ public class NpPosManager implements INpPosControler {
         try {
             byte keyIndex = KeyType.MAC;
             byte keyType = 0;
-            byte MACType = 1;
+            byte MACType = 2;
+            //1 for 16 byte data CBC
+            //2 for X9.19
             byte[] data = StringUtil.str2BCD(macData);
             LogUtil.d("d:" + StringUtil.byte2HexStr(data));
             CalMacResponse result = Command.calMAC(keyIndex, keyType, MACType, data);

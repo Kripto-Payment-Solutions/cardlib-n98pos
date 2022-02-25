@@ -20,4 +20,6 @@
     <string name="device_disconnect">Device Disconnect !</string>
     <string name="blue_no_priority">BlueTooth No Authority</string>
     <string name="request_permission">Request Permission</string>
+    <string name="kek_unpack_fail">KEK Unpack Fail</string>
+    <string name="kek_unpack_success">KEK Unpack Success</string>
 </resources>

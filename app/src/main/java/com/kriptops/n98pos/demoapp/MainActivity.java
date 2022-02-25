@@ -30,8 +30,13 @@ import com.kriptops.n98pos.cardlib.android.BluetoothApp;
 import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
+import com.kriptops.n98pos.demoapp.utils.LogUtil;
+import com.kriptops.n98pos.demoapp.utils.RSAUtil;
+import com.kriptops.n98pos.demoapp.utils.StringUtil;
 import com.kriptops.n98pos.demoapp.utils.TDesUtil;
+import com.kriptops.n98pos.demoapp.view.ActivityCollector;
 import com.newpos.mposlib.sdk.CardInfoEntity;
+import com.newpos.mposlib.sdk.CardReadEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
 import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.NpPosManager;
@@ -39,6 +44,8 @@ import com.newpos.mposlib.util.ISOUtil;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -47,7 +54,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MainActivity extends AppCompatActivity implements INpSwipeListener {
+public class MainActivity extends AppCompatActivity{
 
     private EditText masterKey;
     private EditText pinKey;
@@ -56,6 +63,8 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
     private EditText plainText;
     private EditText encriptedText;
     private TextView log;
+
+    private String KEK = "";
 
     private Button btnConnectDevice;
 
@@ -77,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ActivityCollector.addActivity(this);
         this.masterKey = this.findViewById(R.id.txt_llave_master);
         // Setear con la configuracion de la MK de pruebas asignada
         //this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
@@ -92,9 +102,11 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
 
         requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
 
-        posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
+        getPos().setOnError(this::onError);
+        getPos().setOnSuccess(this::onSuccess);
 
-        testNpPosManager = new TestNpManager(getApplicationContext(), this);
+        //posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
+        //testNpPosManager = new TestNpManager(getApplicationContext(), this);
     }
 
     @Override
@@ -150,153 +162,72 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
     }
 
     public void btn_inyectar_llaves(View btn) {
-        // Log.d(Defaults.LOG_TAG, "Inyectar llaves");
-        String masterKey = this.masterKey.getText().toString();
-        String pinkey = pinKey.getText().toString();
-        String mackey = macKey.getText().toString();
-        String trackkey = dataKey.getText().toString();
 
-        //salida de la call a init en OT
-        String ewkPinHex = protectKey(masterKey, pinKey.getText().toString());
-        // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
-        String ewkDataHex = protectKey(masterKey, dataKey.getText().toString());
-        // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
-        String ewkMacHex = protectKey(masterKey, macKey.getText().toString());
-        // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
+        if(getPos().getPosManager().isConnected()) {
 
+            // Log.d(Defaults.LOG_TAG, "Inyectar llaves");
+            String masterKey = this.masterKey.getText().toString();
+            String pinkey = pinKey.getText().toString();
+            String mackey = macKey.getText().toString();
+            String trackkey = dataKey.getText().toString();
 
-        byte []IV            = ISOUtil.hex2byte("0000000000000000");
-        byte []encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(pinkey));
-        byte []PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey),IV);
-        byte []encryptMAC    = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(mackey));
-        byte []MACkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(mackey),IV);
-        byte []encryptTrack  = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey),ISOUtil.hex2byte(trackkey));
-        byte []TRACKkcv     = TDesUtil.encryptECB(ISOUtil.hex2byte(trackkey),IV);
+            //salida de la call a init en OT
+            String ewkPinHex = protectKey(masterKey, pinKey.getText().toString());
+            // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
+            String ewkDataHex = protectKey(masterKey, dataKey.getText().toString());
+            // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
+            String ewkMacHex = protectKey(masterKey, macKey.getText().toString());
+            // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
 
-        boolean [] response = new boolean[1];
+            pinkey      = "6CEBADBA69612480FC2FC331D291B0F1"; //clear key
+            mackey      = "23BC72AC94C03BD34D9E6BCB1AB3F950"; //clear key
+            trackkey    = "C305C4F9B5B84E6CE0A3789FF822101E"; //clear key
 
-        getPos().setContext(getApplicationContext());
-//        response[0] = posManager.updateKeys(
-//                encryptPIN,
-//                PINkcv,
-//                encryptMAC,
-//                MACkcv,
-//                encryptTrack,
-//                TRACKkcv
-//        );
+            byte[] IV           = ISOUtil.hex2byte("0000000000000000");
+            byte[] encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey), ISOUtil.hex2byte(pinkey));
+            byte[] PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey), IV);
+            byte[] encryptMAC   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey), ISOUtil.hex2byte(mackey));
+            byte[] MACkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(mackey), IV);
+            byte[] encryptTrack = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey), ISOUtil.hex2byte(trackkey));
+            byte[] TRACKkcv     = TDesUtil.encryptECB(ISOUtil.hex2byte(trackkey), IV);
 
-        response[0] = testNpPosManager.updateKeys(
-                encryptPIN,
-                PINkcv,
-                encryptMAC,
-                MACkcv,
-                encryptTrack,
-                TRACKkcv)
-        ;
+            boolean[] response = new boolean[1];
 
+            getPos().withPosManager(npPosManager -> {
+                response[0] = npPosManager.updateKeys(
+                        encryptPIN,
+                        PINkcv,
+                        encryptMAC,
+                        MACkcv,
+                        encryptTrack,
+                        TRACKkcv
+                );
+            });
 
-//        getPos().withPosManager(npPosManager -> {
-//            response[0] = npPosManager.updateKeys(
-//                    encryptPIN,
-//                    PINkcv,
-//                    encryptMAC,
-//                    MACkcv,
-//                    encryptTrack,
-//                    TRACKkcv
-//            );
-//        });
-
-        System.out.println("response[0]: " + response[0]);
-
-        this.runOnUiThread(() -> {
-            if (response[0]) {
-                Toast.makeText(this, "Llaves actualizadas", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "No se puede actualizar llaves", Toast.LENGTH_LONG).show();
-            }
-        });
-
-//        LogUtil.e("update master key kek ="+KEK);
-//        if(KEK != null){
-//            byte []encrypt=TDesUtil.encryptECB(ISOUtil.hex2byte(KEK),ISOUtil.hex2byte(masterkey));
-//            LogUtil.e("update master key encrypt ="+ISOUtil.byte2hex(encrypt));
-//            byte []IV=ISOUtil.hex2byte("0000000000000000");
-//            byte[]kcv=TDesUtil.encryptECB(ISOUtil.hex2byte(masterkey),IV);
-//            LogUtil.e("update master key kcv ="+ISOUtil.byte2hex(kcv));
-//            posManager.updateMasterKey(ISOUtil.byte2hex(encrypt)+ISOUtil.byte2hex(kcv,0,4));
-//        }
-//        else{
-//            posManager.updateMasterKey("51314BB1BF681C600F80B5E3");
-//        }
+            this.runOnUiThread(() -> {
+                if (response[0]) {
+                    Toast.makeText(this, "Llaves actualizadas", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "No se puede actualizar llaves", Toast.LENGTH_LONG).show();
+                }
+            });
+        }else{
+            this.runOnUiThread(() -> {
+                Toast.makeText(this, "Device not connected to bluetooth", Toast.LENGTH_LONG).show();
+            });
+        }
     }
 
     public void updateKeys(Pinpad pinpad) {
     }
 
     public void btn_connect_blue(View btn){
-        BluetoothApp bluetoothApp = new BluetoothApp(getApplicationContext(),this){
-            @Override
-            protected void handleMessageClient(Message msg) {
-                super.handleMessageClient(msg);
-                Log.d("MainActivityBlue", "handleMessageSafe");
-                switch (msg.what){
-                    case Constant.OPERATTON_RESULT_BLUETOOTH:
-                        Log.d("MainActivityBlue", "OPERATTON_RESULT_BLUETOOTH - " + msg.obj.toString());
-                        switch(msg.obj.toString()){
-                            case "onDeviceConnected":
-                                btnConnectDevice.setText("Disconnect Device");
-                                lConnectDevice = true;
-
-                                // Log.d(Defaults.LOG_TAG, "Inyectar llaves");
-                                String sMasterKey = masterKey.getText().toString();
-                                String pinkey = pinKey.getText().toString();
-                                String mackey = macKey.getText().toString();
-                                String trackkey = dataKey.getText().toString();
-
-                                //salida de la call a init en OT
-                                String ewkPinHex = protectKey(sMasterKey, pinKey.getText().toString());
-                                // Log.d(Defaults.LOG_TAG, "llave de pin " + ewkPinHex);
-                                String ewkDataHex = protectKey(sMasterKey, dataKey.getText().toString());
-                                // Log.d(Defaults.LOG_TAG, "llave de datos(track) " + ewkDataHex);
-                                String ewkMacHex = protectKey(sMasterKey, macKey.getText().toString());
-                                // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
-
-
-                                byte []IV            = ISOUtil.hex2byte("0000000000000000");
-                                byte []encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(pinkey));
-                                byte []PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey),IV);
-                                byte []encryptMAC    = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(mackey));
-                                byte []MACkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(mackey),IV);
-                                byte []encryptTrack  = TDesUtil.encryptECB(ISOUtil.hex2byte(sMasterKey),ISOUtil.hex2byte(trackkey));
-                                byte []TRACKkcv     = TDesUtil.encryptECB(ISOUtil.hex2byte(trackkey),IV);
-
-                                boolean [] response = new boolean[1];
-                                response[0] = this.updateKeys(encryptPIN,
-                                        PINkcv,
-                                        encryptMAC,
-                                        MACkcv,
-                                        encryptTrack,
-                                        TRACKkcv);
-
-                                break;
-                            case "onDeviceDisConnected":
-                                btnConnectDevice.setText("Connect Device");
-                                lConnectDevice = false;
-                                break;
-                        }
-                        Toast.makeText(MainActivity.this, msg.obj.toString(), Toast.LENGTH_SHORT).show();
-                        break;
-                }
-            }
-        };
-
         if(!lConnectDevice){
-            //getPos().connectDevice(macAdrressN98);
-            bluetoothApp.connectDevice(macAdrressN98);
+            getPos().connectBTDevice(macAdrressN98);
         }else{
-            //getPos().disConnectDevice();
-            bluetoothApp.disConnectDevice();
+            getPos().disConnectDevice();
         }
+
         //BluetoothActivity.actionStart(MainActivity.this,"This");
     }
 
@@ -332,64 +263,73 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
 
     public void btn_do_trade(View view) {
         this.log.setText("Present Card");
-        /*getPos().configTerminal( // este metodo se puede llamar una sola vez
-                "PK000001", // tag 9F16 identidad del comercio
-                "PRUEBA KRIPTO", // tag 9F4E nombre del comercio
-                "00000001", // tag 9F1C identidad del terminal dentro del comercio (no es el serial number)
-                "000000000000", // floor limit contactless
-                "000000015000", // transaction limit contactless
-                "000000015000" // cvm limit (desde que monto pasan de ser quick a full)
-        );*/
-        EMVConfig config = new EMVConfig();
-        config.currencyCode = "0604";
-        config.currencyExponent = "02";
-        config.merchantIdentifier = "12345678";
-        config.terminalCountryCode = "0604";
-        config.terminalIdentification = "1234";
-        config.terminalCapabilities = "E0F8C8";
-        config.terminalType = "21";
-        config.additionalTerminalCapabilities = "FF80F0A001";
-        config.merchantNameAndLocation = "COMERCIO DE PRUEBA";
-        config.ttq1 = "36";
-        config.contactlessFloorLimit = "000000000000";
-        config.contactlessCvmLimit = "000000015000";
-        config.contactlessTransactionLimit = "009999999999";
-        config.statusCheckSupport = "00";
-        getPos().configTerminal(config);
 
-        getPos().setPinpadCustomUI(true); // cambia la pantalla de fondo cuando se solicita el uso del pinpad
-        getPos().setOnPinRequested(this::onPinRequested);
-        getPos().setDigitsListener(this::onPinDigit);
-        getPos().setOnPinCaptured(this::onPinCaptured);
+        CardReadEntity cardReadEntitys =  new CardReadEntity();
+        cardReadEntitys.setSupportFallback(false);
+        cardReadEntitys.setTimeout(30);
+        cardReadEntitys.setAmount("000000005501");
+        cardReadEntitys.setTradeType(0);
+        getPos().getPosManager().readCard(cardReadEntitys);
 
-        getPos().setTagList(new int[]{
-                0x5f2a,
-                0x82,
-                0x95,
-                0x9a,
-                0x9c,
-                0x9f02,
-                0x9f03,
-                0x9f10,
-                0x9f1a,
-                0x9f26,
-                0x9f27,
-                0x9f33,
-                0x9f34,
-                0x9f35,
-                0x9f36,
-                0x9f37,
-                0x9f40
-        });
-        getPos().setOnError(this::onError);
-        getPos().setGoOnline(this::online);
-        getPos().beginTransaction( // ete metodo se llama en cada transaccion
-                "210820", // fecha en formato
-                "030800",
-                "00000001",
-                "100"
-                //,false //agregar para hacer el cashback
-        );
+//        /*getPos().configTerminal( // este metodo se puede llamar una sola vez
+//                "PK000001", // tag 9F16 identidad del comercio
+//                "PRUEBA KRIPTO", // tag 9F4E nombre del comercio
+//                "00000001", // tag 9F1C identidad del terminal dentro del comercio (no es el serial number)
+//                "000000000000", // floor limit contactless
+//                "000000015000", // transaction limit contactless
+//                "000000015000" // cvm limit (desde que monto pasan de ser quick a full)
+//        );*/
+//        EMVConfig config = new EMVConfig();
+//        config.currencyCode = "0604";
+//        config.currencyExponent = "02";
+//        config.merchantIdentifier = "12345678";
+//        config.terminalCountryCode = "0604";
+//        config.terminalIdentification = "1234";
+//        config.terminalCapabilities = "E0F8C8";
+//        config.terminalType = "21";
+//        config.additionalTerminalCapabilities = "FF80F0A001";
+//        config.merchantNameAndLocation = "COMERCIO DE PRUEBA";
+//        config.ttq1 = "36";
+//        config.contactlessFloorLimit = "000000000000";
+//        config.contactlessCvmLimit = "000000015000";
+//        config.contactlessTransactionLimit = "009999999999";
+//        config.statusCheckSupport = "00";
+//        getPos().configTerminal(config);
+//
+//        getPos().setPinpadCustomUI(true); // cambia la pantalla de fondo cuando se solicita el uso del pinpad
+//        getPos().setOnPinRequested(this::onPinRequested);
+//        getPos().setDigitsListener(this::onPinDigit);
+//        getPos().setOnPinCaptured(this::onPinCaptured);
+//
+//        getPos().setTagList(new int[]{
+//                0x5f2a,
+//                0x82,
+//                0x95,
+//                0x9a,
+//                0x9c,
+//                0x9f02,
+//                0x9f03,
+//                0x9f10,
+//                0x9f1a,
+//                0x9f26,
+//                0x9f27,
+//                0x9f33,
+//                0x9f34,
+//                0x9f35,
+//                0x9f36,
+//                0x9f37,
+//                0x9f40
+//        });
+//        getPos().setOnError(this::onError);
+//        getPos().setGoOnline(this::online);
+//        getPos().setOnSuccess(this::onSuccess);
+//        getPos().beginTransaction( // ete metodo se llama en cada transaccion
+//                "210820", // fecha en formato
+//                "030800",
+//                "00000001",
+//                "100"
+//                //,false //agregar para hacer el cashback
+//        );
     }
 
     private void online(TransactionData data) {
@@ -403,7 +343,75 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
     private void onError(String source, String code) {
         // Log.d(Defaults.LOG_TAG, "Controlar el error de lectura de datos");
         this.runOnUiThread(() -> {
+            Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
             this.log.setText("Error " + source + " " + code);
+        });
+    }
+
+    private void onSuccess(String source, String code) {
+        // Log.d(Defaults.LOG_TAG, "Controlar el error de lectura de datos");
+        this.runOnUiThread(() -> {
+
+            switch(source.toString()){
+                case "onDeviceConnected":
+                    btnConnectDevice.setText("Disconnect Device");
+                    lConnectDevice = true;
+
+                    //ACTUALIZAR MASTER KEY
+                    //*********************
+                    //Generamos las llaves publicas y privadas
+                    //Se transmite el módulo de clave pública, el exponente es fijo
+                    RSAUtil.generateRSAKeyPair();
+                    try {
+                        RSAPublicKey publickey  = (RSAPublicKey)RSAUtil.getPublicKey(RSAUtil.PUBLIC_KEY_PATH);
+                        byte[] module           = publickey.getModulus().toByteArray();
+                        LogUtil.e("module ="+ISOUtil.byte2hex(module));
+                        getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                LogUtil.d("[error ]onDeviceConnected[generateRSAKeyPair]",e.getMessage());
+                                Toast.makeText(getApplicationContext(), "[error ]onDeviceConnected[generateRSAKeyPair]: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                    }
+
+                    break;
+                case "onDeviceDisConnected":
+                    btnConnectDevice.setText("Connect Device");
+                    lConnectDevice = false;
+                    break;
+
+                case "onGetTransportSessionKey":
+                    boolean lunpack = kek_unpack(code);
+
+                    if(lunpack){
+                        //Actualizamos la master key
+                        LogUtil.e("update master key kek =" + KEK);
+                        String masterkey = this.masterKey.getText().toString();
+                        byte []encrypt  = TDesUtil.encryptECB(ISOUtil.hex2byte(KEK),ISOUtil.hex2byte(masterkey));
+                        LogUtil.e("update master key encrypt =" + ISOUtil.byte2hex(encrypt));
+                        byte []IV       = ISOUtil.hex2byte("0000000000000000");
+                        byte []kcv      = TDesUtil.encryptECB(ISOUtil.hex2byte(masterkey), IV);
+                        LogUtil.e("update master key kcv =" + ISOUtil.byte2hex(kcv));
+                        getPos().getPosManager().updateMasterKey(ISOUtil.byte2hex(encrypt)+ISOUtil.byte2hex(kcv,0,4));
+
+                    }
+                    break;
+
+                case "onUpdateMasterKeySuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onUpdateMasterKeySuccess","onUpdateMasterKeySuccess()");
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+            }
         });
     }
 
@@ -464,165 +472,55 @@ public class MainActivity extends AppCompatActivity implements INpSwipeListener 
                 ));
     }
 
+    public boolean kek_unpack(final String s){
+        try {
+            Log.d("s:" , s);
+            Log.d("KCV =" , s.substring(s.length()-8));
+            String kcv = s.substring(s.length()-8);
+            PrivateKey privateKey = RSAUtil.getPrivateKey(RSAUtil.PRIVATE_KEY_PATH);
 
-    @Override
-    public void onScannerResult(BluetoothDevice devInfo) {
+            Cipher cipher = Cipher.getInstance("RSA");//PKCS1Padding
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            Log.d("string ==" , s.substring(0,s.length()-8 ));
+            byte[] bytes = cipher.doFinal(StringUtil.hexStr2Bytes(s.substring(0,s.length()-8 )));//256 ->512
+            LogUtil.d("decrypt result==" , ISOUtil.byte2hex(bytes));
+            //final String kek = StringUtil.byte2HexStr(bytes);
+            //final String kek =s.substring(s.length()-32-8,s.length()-8);
+            byte []kekbyte=new byte[16];
+            byte []IV=ISOUtil.hex2byte("0000000000000000");
+            System.arraycopy(bytes,bytes.length-16,kekbyte,0,16);
+            LogUtil.d("kek:" + ISOUtil.byte2hex(kekbyte));
+            byte[]calckcv=TDesUtil.encryptECB(kekbyte,IV);
+            LogUtil.d("calckcv:" + ISOUtil.byte2hex(calckcv));
+            LogUtil.d("KCV:" +kcv);
+            if(!ISOUtil.memcmp(calckcv,0,ISOUtil.hex2byte(kcv),0,4)){
+                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), getString(R.string.kek_unpack_fail), Toast.LENGTH_SHORT).show();
+                    }
 
-    }
-
-    @Override
-    public void onDeviceConnected() {
-//        new Handler(Looper.getMainLooper()).post(new Runnable() {
-//            @Override
-//            public void run() {
-//                //Toast.makeText(BluetoothActivity.this, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-//                Message msg = new Message();
-//                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-//                msg.obj = "onDeviceConnected";
-//                mHandler.sendMessage(msg);
-//                Log.d("BluetoothApp", "onDeviceConnected");
-//                Context context = posApp.getApplicationContext();
-//                Toast.makeText(context, context.getText(com.kriptops.n98pos.cardlib.R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-    }
-
-    @Override
-    public void onDeviceDisConnected() {
-//        new Handler(Looper.getMainLooper()).post(new Runnable() {
-//            @Override
-//            public void run() {
-//                Message msg = new Message();
-//                msg.what = Constant.OPERATTON_RESULT_BLUETOOTH;
-//                msg.obj = "onDeviceDisConnected";
-//                mHandler.sendMessage(msg);
-//                Log.d("BluetoothApp", "onDeviceDisConnected");
-//                Context context = posApp.getApplicationContext();
-//                Toast.makeText(context, context.getText(com.kriptops.n98pos.cardlib.R.string.device_disconnect), Toast.LENGTH_SHORT).show();
-//            }
-//        });
-    }
-
-    @Override
-    public void onGetDeviceInfo(DeviceInfoEntity info) {
-
-    }
-
-    @Override
-    public void onGetTransportSessionKey(String encryTransportKey) {
-
-    }
-
-    @Override
-    public void onUpdateMasterKeySuccess() {
-
-    }
-
-    @Override
-    public void onUpdateWorkingKeySuccess() {
-
-    }
-
-    @Override
-    public void onAddAidSuccess() {
-
-    }
-
-    @Override
-    public void onAddRidSuccess() {
-
-    }
-
-    @Override
-    public void onClearAids() {
-
-    }
-
-    @Override
-    public void onClearRids() {
-
-    }
-
-    @Override
-    public void onGetCardNumber(String cardNum) {
-
-    }
-
-    @Override
-    public void onGetDeviceBattery(boolean result) {
-
-    }
-
-    @Override
-    public void onDetachedIC() {
-
-    }
-
-    @Override
-    public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
-
-    }
-
-    @Override
-    public void onGetReadInputInfo(String inputInfo) {
-
-    }
-
-    @Override
-    public void onGetICCardWriteback(boolean result) {
-
-    }
-
-    @Override
-    public void onCancelReadCard() {
-
-    }
-
-    @Override
-    public void onGetCalcMacResult(String encryMacData) {
-
-    }
-
-    @Override
-    public void onUpdateFirmwareProcess(float percent) {
-
-    }
-
-    @Override
-    public void onUpdateFirmwareSuccess() {
-
-    }
-
-    @Override
-    public void onGenerateQRCodeSuccess() {
-
-    }
-
-    @Override
-    public void onSetTransactionInfoSuccess() {
-
-    }
-
-    @Override
-    public void onGetTransactionInfoSuccess(String transactionInfo) {
-
-    }
-
-    @Override
-    public void onDisplayTextOnScreenSuccess() {
-
-    }
-
-    @Override
-    public void onReceiveErrorCode(int error, String message) {
-        System.out.println("onReceiverErrorCode");
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Log.d("Pos","onReceiveErrorCode()");
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                });
+                return false;
             }
-        });
-    }
+            KEK= ISOUtil.byte2hex(kekbyte);
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), getString(R.string.kek_unpack_success), Toast.LENGTH_SHORT).show();
+                }
+            });
 
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), getString(R.string.kek_unpack_fail), Toast.LENGTH_SHORT).show();
+                }
+            });
+            return false;
+        }
+    }
 }
