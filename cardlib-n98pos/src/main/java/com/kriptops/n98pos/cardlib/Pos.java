@@ -27,6 +27,7 @@ import com.kriptops.n98pos.cardlib.crypto.PaddingMode;
 import com.kriptops.n98pos.cardlib.db.MapIVController;
 import com.kriptops.n98pos.cardlib.func.BiConsumer;
 import com.kriptops.n98pos.cardlib.func.Consumer;
+import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.CardReadEntity;
@@ -59,7 +60,8 @@ public class Pos {
     private Runnable onPinCaptured;
     private BiConsumer<String, String> onError;
     private BiConsumer<String, String> onWarning;
-    private BiConsumer<String, String> onSuccess;
+    private BiConsumer<String, ResponsePos> onSuccess;
+
     private Consumer<Integer> digitsListener;
     private Consumer<TransactionData> goOnline;
     protected TransactionData data;
@@ -79,8 +81,14 @@ public class Pos {
                 @Override
                 public void run() {
                     Context context = posApp.getApplicationContext();
-                    Toast.makeText(context, context.getText(R.string.device_connect_success), Toast.LENGTH_SHORT).show();
-                    raiseSuccess("onDeviceConnected", context.getText(R.string.device_connect_success).toString());
+                    String messageShow = context.getText(R.string.device_connect_success).toString();
+
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onDeviceConnected");
+                    response.setMessage(messageShow);
+
+                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
+                    raiseSuccess("onDeviceConnected", response);
                 }
             });
         }
@@ -91,8 +99,14 @@ public class Pos {
                 @Override
                 public void run() {
                     Context context = posApp.getApplicationContext();
-                    Toast.makeText(context, context.getText(R.string.device_disconnect), Toast.LENGTH_SHORT).show();
-                    raiseSuccess("onDeviceDisConnected", context.getText(R.string.device_disconnect).toString());
+                    String messageShow = context.getText(R.string.device_disconnect).toString();
+
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onDeviceDisConnected");
+                    response.setMessage(messageShow);
+
+                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
+                    raiseSuccess("onDeviceDisConnected", response);
 
                 }
             });
@@ -100,7 +114,22 @@ public class Pos {
 
         @Override
         public void onGetDeviceInfo(DeviceInfoEntity info) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    Context context = posApp.getApplicationContext();
+                    String messageShow = context.getText(R.string.device_disconnect).toString();
 
+                    ResponsePos<DeviceInfoEntity> response = new ResponsePos<DeviceInfoEntity>();
+                    response.setNameEvent("onGetDeviceInfo");
+                    response.setMessage(messageShow);
+                    response.setObjResp(info);
+
+                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
+                    raiseSuccess("onGetDeviceInfo", response);
+
+                }
+            });
         }
 
         @Override
@@ -108,7 +137,10 @@ public class Pos {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 @Override
                 public void run() {
-                    raiseSuccess("onGetTransportSessionKey", encryTransportKey);
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onGetTransportSessionKey");
+                    response.setEncryTransportKey(encryTransportKey);
+                    raiseSuccess("onGetTransportSessionKey", response);
                 }
             });
         }
@@ -116,13 +148,19 @@ public class Pos {
         @Override
         public void onUpdateMasterKeySuccess() {
             Context context = posApp.getApplicationContext();
-            raiseSuccess("onUpdateMasterKeySuccess", context.getText(R.string.update_master_key_success).toString());
+            ResponsePos response = new ResponsePos();
+            response.setNameEvent("onUpdateMasterKeySuccess");
+            response.setMessage(context.getText(R.string.update_master_key_success).toString());
+            raiseSuccess("onUpdateMasterKeySuccess", response);
         }
 
         @Override
         public void onUpdateWorkingKeySuccess() {
             Context context = posApp.getApplicationContext();
-            raiseSuccess("onUpdateWorkingKeySuccess", context.getText(R.string.update_working_key_success).toString());
+            ResponsePos response = new ResponsePos();
+            response.setNameEvent("onUpdateWorkingKeySuccess");
+            response.setMessage(context.getText(R.string.update_working_key_success).toString());
+            raiseSuccess("onUpdateWorkingKeySuccess", response);
         }
 
         @Override
@@ -147,7 +185,17 @@ public class Pos {
 
         @Override
         public void onGetCardNumber(String cardNum) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onGetCardNumber");
+                    response.setCardNum(cardNum);
 
+                    raiseSuccess("onGetCardNumber", response);
+
+                }
+            });
         }
 
         @Override
@@ -162,12 +210,32 @@ public class Pos {
 
         @Override
         public void onGetReadCardInfo(CardInfoEntity cardInfoEntity) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos<CardInfoEntity> response = new ResponsePos<CardInfoEntity>();
+                    response.setNameEvent("onGetReadCardInfo");
+                    response.setObjResp(cardInfoEntity);
 
+                    raiseSuccess("onGetReadCardInfo", response);
+
+                }
+            });
         }
 
         @Override
         public void onGetReadInputInfo(String inputInfo) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onGetReadInputInfo");
+                    response.setInputInfo(inputInfo);
 
+                    raiseSuccess("onGetReadInputInfo", response);
+
+                }
+            });
         }
 
         @Override
@@ -182,7 +250,17 @@ public class Pos {
 
         @Override
         public void onGetCalcMacResult(String encryMacData) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onGetCalcMacResult");
+                    response.setEncryMacData(encryMacData);
 
+                    raiseSuccess("onGetCalcMacResult", response);
+
+                }
+            });
         }
 
         @Override
@@ -207,7 +285,17 @@ public class Pos {
 
         @Override
         public void onGetTransactionInfoSuccess(String transactionInfo) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onGetTransactionInfoSuccess");
+                    response.setTransactionInfo(transactionInfo);
 
+                    raiseSuccess("onGetTransactionInfoSuccess", response);
+
+                }
+            });
         }
 
         @Override
@@ -353,6 +441,23 @@ public class Pos {
         this.emv.setTaglist(tagList);
     }
 
+    public void setTagAIDs() {
+        if(posManager.isConnected()) {
+            for (String aid : Defaults.AIDS) {
+                this.posManager.addAid(aid);
+            }
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("not_set_aids", messageShow);
+        }
+    }
+
+    public void clearAIDS(){
+        posManager.clearAids();
+    }
+
     private void configPinpad(Pinpad pinpad) {
         pinpad.setGUIConfiguration("sound", "true" );
     }
@@ -428,6 +533,7 @@ public class Pos {
      * @param cashback indica si es una reversa
      */
     public void beginTransaction(String date, String time, String tsc, String amount, boolean cashback) {
+        /*
         emv.reset();
         data = new TransactionData();
         emv.beginTransaction(
@@ -437,6 +543,19 @@ public class Pos {
                 amount,
                 cashback
         );
+        */
+
+        //this.clearAIDS();
+        //this.setTagAIDs();
+
+        CardReadEntity cardReadEntitys =  new CardReadEntity();
+        cardReadEntitys.setSupportFallback(false);
+        cardReadEntitys.setTimeout(30);
+        cardReadEntitys.setAmount("000000005501");
+        //cardReadEntitys.setAmount(amount);
+        //0x01 mag 0x02 icc  0x04 nfc
+        cardReadEntitys.setTradeType(0x01 | 0x02 | 0x04);
+        posManager.readCard(cardReadEntitys);
     }
 
     /**
@@ -559,7 +678,7 @@ public class Pos {
      *
      * @param onSuccess
      */
-    public void setOnSuccess(BiConsumer<String, String> onSuccess) {
+    public void setOnSuccess(BiConsumer<String, ResponsePos> onSuccess) {
         this.onSuccess = onSuccess;
     }
 
@@ -582,7 +701,12 @@ public class Pos {
         if (this.onWarning != null) onWarning.accept(source, payload);
     }
 
-    protected void raiseSuccess(String source, String payload) {
+    //    protected void raiseSuccess(String source, String payload) {
+    //        // Log.d(Defaults.LOG_TAG, "Success: " + source + " " + payload);
+    //        if (this.onSuccess != null) onSuccess.accept(source, payload);
+    //    }
+
+    protected void raiseSuccess(String source, ResponsePos payload) {
         // Log.d(Defaults.LOG_TAG, "Success: " + source + " " + payload);
         if (this.onSuccess != null) onSuccess.accept(source, payload);
     }

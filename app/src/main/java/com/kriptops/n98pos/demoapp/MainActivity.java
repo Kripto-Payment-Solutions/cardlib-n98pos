@@ -28,6 +28,7 @@ import com.kriptops.n98pos.cardlib.Printer;
 import com.kriptops.n98pos.cardlib.TransactionData;
 import com.kriptops.n98pos.cardlib.android.BluetoothApp;
 import com.kriptops.n98pos.cardlib.constant.Constant;
+import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
 import com.kriptops.n98pos.demoapp.utils.LogUtil;
@@ -264,12 +265,12 @@ public class MainActivity extends AppCompatActivity{
     public void btn_do_trade(View view) {
         this.log.setText("Present Card");
 
-        CardReadEntity cardReadEntitys =  new CardReadEntity();
-        cardReadEntitys.setSupportFallback(false);
-        cardReadEntitys.setTimeout(30);
-        cardReadEntitys.setAmount("000000005501");
-        cardReadEntitys.setTradeType(0);
-        getPos().getPosManager().readCard(cardReadEntitys);
+//        CardReadEntity cardReadEntitys =  new CardReadEntity();
+//        cardReadEntitys.setSupportFallback(false);
+//        cardReadEntitys.setTimeout(30);
+//        cardReadEntitys.setAmount("000000005501");
+//        cardReadEntitys.setTradeType(0);
+//        getPos().getPosManager().readCard(cardReadEntitys);
 
 //        /*getPos().configTerminal( // este metodo se puede llamar una sola vez
 //                "PK000001", // tag 9F16 identidad del comercio
@@ -323,13 +324,13 @@ public class MainActivity extends AppCompatActivity{
 //        getPos().setOnError(this::onError);
 //        getPos().setGoOnline(this::online);
 //        getPos().setOnSuccess(this::onSuccess);
-//        getPos().beginTransaction( // ete metodo se llama en cada transaccion
-//                "210820", // fecha en formato
-//                "030800",
-//                "00000001",
-//                "100"
-//                //,false //agregar para hacer el cashback
-//        );
+        getPos().beginTransaction( // ete metodo se llama en cada transaccion
+                "210820", // fecha en formato
+                "030800",
+                "00000001",
+                "100"
+                //,false //agregar para hacer el cashback
+        );
     }
 
     private void online(TransactionData data) {
@@ -348,7 +349,8 @@ public class MainActivity extends AppCompatActivity{
         });
     }
 
-    private void onSuccess(String source, String code) {
+    private void onSuccess(String source, ResponsePos responsePos) {
+    //private void onSuccess(String source, String code) {
         // Log.d(Defaults.LOG_TAG, "Controlar el error de lectura de datos");
         this.runOnUiThread(() -> {
 
@@ -366,7 +368,7 @@ public class MainActivity extends AppCompatActivity{
                         RSAPublicKey publickey  = (RSAPublicKey)RSAUtil.getPublicKey(RSAUtil.PUBLIC_KEY_PATH);
                         byte[] module           = publickey.getModulus().toByteArray();
                         LogUtil.e("module ="+ISOUtil.byte2hex(module));
-                        getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
+                        //getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
                     } catch (Exception e) {
                         e.printStackTrace();
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -385,7 +387,7 @@ public class MainActivity extends AppCompatActivity{
                     break;
 
                 case "onGetTransportSessionKey":
-                    boolean lunpack = kek_unpack(code);
+                    boolean lunpack = kek_unpack(responsePos.getEncryTransportKey());
 
                     if(lunpack){
                         //Actualizamos la master key
@@ -406,7 +408,7 @@ public class MainActivity extends AppCompatActivity{
                         @Override
                         public void run() {
                             LogUtil.d("onUpdateMasterKeySuccess","onUpdateMasterKeySuccess()");
-                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                     break;
@@ -416,7 +418,7 @@ public class MainActivity extends AppCompatActivity{
                         @Override
                         public void run() {
                             LogUtil.d("onUpdateWorkingKeySuccess","onUpdateWorkingKeySuccess()");
-                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + code, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
                     break;

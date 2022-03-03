@@ -22,4 +22,5 @@
     <string name="request_permission">Request Permission</string>
     <string name="update_master_key_success">Update Master Key Success</string>
     <string name="update_working_key_success">Update Working Key Success</string>
+    <string name="device_not_connect">Dispositivo no conectado a bluetooth!</string>
 </resources>
