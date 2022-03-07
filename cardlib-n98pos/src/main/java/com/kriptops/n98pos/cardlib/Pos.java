@@ -124,8 +124,6 @@ public class Pos {
                     response.setNameEvent("onGetDeviceInfo");
                     response.setMessage(messageShow);
                     response.setObjResp(info);
-
-                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
                     raiseSuccess("onGetDeviceInfo", response);
 
                 }

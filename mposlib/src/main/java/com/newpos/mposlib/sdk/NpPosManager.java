@@ -341,6 +341,31 @@ public class NpPosManager implements INpPosControler {
         //this.ivController.saveIv(IV_PIN, pinIvHex);
     }
 
+    private byte[] updateKey(byte masterKeyIndex, byte keyType, byte keyIndex, String keyMaterial) throws SDKException {
+        byte[] result;
+        byte[] wKey;
+        byte[] checkValue;
+        byte checkMode;
+        if (keyMaterial.length() == 32) {
+            wKey = StringUtil.hexStr2Bytes(keyMaterial);
+            checkValue = new byte[8];
+            checkMode = 0;
+        } else if (keyMaterial.length() == 24) {
+            wKey = StringUtil.hexStr2Bytes(keyMaterial.substring(0, 16));
+            checkValue = StringUtil.hexStr2Bytes(keyMaterial.substring(16, 24));
+            checkMode = 1;
+        } else if (keyMaterial.length() == 40) {
+            wKey = StringUtil.hexStr2Bytes(keyMaterial.substring(0, 32));
+            checkValue = StringUtil.hexStr2Bytes(keyMaterial.substring(32, 40));
+            checkMode = 1;
+        } else {
+            return null;
+        }
+        result = Command.loadWorkKey(keyType, masterKeyIndex, keyIndex, wKey,
+                checkMode, checkValue);
+        return result;
+    }
+
     /**
      * @param pinKey   PIN密钥密文 + KCV
      * @param macKey   MAC密钥密文 + KCV
@@ -358,6 +383,11 @@ public class NpPosManager implements INpPosControler {
             if (pinKey != null) {
                 byte keyType = KeyType.PIN;
                 byte wKeyIndex = KeyType.PIN;
+
+                //Inyeccion de solo dos llaves
+                result = updateKey(mainKeyIndex, keyType, wKeyIndex, pinKey);
+
+                /*
                 if (pinKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(pinKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(pinKey.substring(16, 24));
@@ -369,11 +399,16 @@ public class NpPosManager implements INpPosControler {
                     result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
+                */
             }
 
             if (macKey != null) {
                 byte keyType = KeyType.MAC;
                 byte wKeyIndex = KeyType.MAC;
+
+                result = updateKey(mainKeyIndex, keyType, wKeyIndex, macKey);
+
+                /*
                 if (macKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(macKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(macKey.substring(16, 24));
@@ -385,11 +420,16 @@ public class NpPosManager implements INpPosControler {
                     result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
+                */
             }
 
             if (trackKey != null) {
                 byte keyType = KeyType.TRACK;
                 byte wKeyIndex = KeyType.TRACK;
+
+                result = updateKey(mainKeyIndex, keyType, wKeyIndex, trackKey);
+
+                /*
                 if (trackKey.length() == 24) {
                     byte[] wKey = StringUtil.hexStr2Bytes(trackKey.substring(0, 16));
                     byte[] checkValue = StringUtil.hexStr2Bytes(trackKey.substring(16, 24));
@@ -401,6 +441,7 @@ public class NpPosManager implements INpPosControler {
                     result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
+                 */
             }
 
             if (result != null) {

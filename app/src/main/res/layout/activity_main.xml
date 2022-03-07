@@ -96,6 +96,14 @@
                     android:layout_marginLeft="8dp"
                     android:onClick="btn_inyectar_llaves"
                     android:text="@string/btn_inyectar" />
+
+                <Button
+                    android:id="@+id/btn_serial_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_serial_number"
+                    android:text="@string/btn_serial_number" />
             </LinearLayout>
 
             <TextView

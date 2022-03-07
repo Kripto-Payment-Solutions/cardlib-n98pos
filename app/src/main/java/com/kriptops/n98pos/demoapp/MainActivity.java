@@ -181,7 +181,8 @@ public class MainActivity extends AppCompatActivity{
 //            // Log.d(Defaults.LOG_TAG, "llave de mac " + ewkDataHex);
 
             pinkey      = "6CEBADBA69612480FC2FC331D291B0F1"; //clear key
-            mackey      = "23BC72AC94C03BD34D9E6BCB1AB3F950"; //clear key
+            //mackey      = "23BC72AC94C03BD34D9E6BCB1AB3F950"; //clear key
+            mackey      = "00000000000000000000000000000000"; //clear key
             trackkey    = "C305C4F9B5B84E6CE0A3789FF822101E"; //clear key
 
             byte[] IV           = ISOUtil.hex2byte("0000000000000000");
@@ -195,6 +196,14 @@ public class MainActivity extends AppCompatActivity{
             boolean[] response = new boolean[1];
 
             getPos().withPosManager(npPosManager -> {
+
+                npPosManager.updateWorkingKey(
+                        ISOUtil.byte2hex(encryptPIN),null, ISOUtil.byte2hex(encryptTrack)
+                );
+
+                response[0] = npPosManager.isUpdateWorkKeys();
+
+                /*
                 response[0] = npPosManager.updateKeys(
                         encryptPIN,
                         PINkcv,
@@ -203,6 +212,7 @@ public class MainActivity extends AppCompatActivity{
                         encryptTrack,
                         TRACKkcv
                 );
+                */
             });
 
             this.runOnUiThread(() -> {
@@ -212,6 +222,16 @@ public class MainActivity extends AppCompatActivity{
                     Toast.makeText(this, "No se puede actualizar llaves", Toast.LENGTH_LONG).show();
                 }
             });
+        }else{
+            this.runOnUiThread(() -> {
+                Toast.makeText(this, "Device not connected to bluetooth", Toast.LENGTH_LONG).show();
+            });
+        }
+    }
+
+    public void btn_serial_number(View btn){
+        if(getPos().getPosManager().isConnected()) {
+            getPos().getPosManager().getDeviceInfo();
         }else{
             this.runOnUiThread(() -> {
                 Toast.makeText(this, "Device not connected to bluetooth", Toast.LENGTH_LONG).show();
@@ -368,7 +388,7 @@ public class MainActivity extends AppCompatActivity{
                         RSAPublicKey publickey  = (RSAPublicKey)RSAUtil.getPublicKey(RSAUtil.PUBLIC_KEY_PATH);
                         byte[] module           = publickey.getModulus().toByteArray();
                         LogUtil.e("module ="+ISOUtil.byte2hex(module));
-                        //getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
+                        getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
                     } catch (Exception e) {
                         e.printStackTrace();
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -419,6 +439,40 @@ public class MainActivity extends AppCompatActivity{
                         public void run() {
                             LogUtil.d("onUpdateWorkingKeySuccess","onUpdateWorkingKeySuccess()");
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+
+                case "onGetDeviceInfo":
+                    DeviceInfoEntity deviceInfo = (DeviceInfoEntity) responsePos.getObjResp();
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onGetDeviceInfo",deviceInfo.toString());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + deviceInfo.getKsn(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+
+                case "onGetCardNumber":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onGetCardNumber",responsePos.getCardNum());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " +responsePos.getCardNum(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+
+                case "onGetReadCardInfo":
+                    CardInfoEntity cardInfoEntity = (CardInfoEntity) responsePos.getObjResp();
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onGetDeviceInfo",cardInfoEntity.getCardNumber());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + cardInfoEntity.getCardNumber(), Toast.LENGTH_SHORT).show();
+                            log.setText(cardInfoEntity.getCardNumber());
                         }
                     });
                     break;
