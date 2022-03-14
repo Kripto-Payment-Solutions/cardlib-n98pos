@@ -441,7 +441,7 @@ public class NpPosManager implements INpPosControler {
                     result = Command.loadWorkKey(keyType, mainKeyIndex, wKeyIndex, wKey,
                             checkMode, checkValue);
                 }
-                 */
+                */
             }
 
             if (result != null) {
@@ -663,18 +663,18 @@ public class NpPosManager implements INpPosControler {
     }
     @Override
     public void readCard(final CardReadEntity cardReadEntity) {
-
         try {
             checkEmvParams();
-            byte type = (byte)cardReadEntity.getTradeType();
+           // byte transType = (byte)cardReadEntity.getTradeType();
+            byte cardType = (byte)cardReadEntity.getReadCardType();
             byte tmo = (byte) cardReadEntity.getTimeout();
             byte[] message = ConstantStr.Tips.READ_CARD_TIPS.getBytes("GBK");
             byte fallback = 1;
 
-            byte[] result = Command.openCardReader(type, tmo, message, fallback);
+            byte[] result = Command.openCardReader(cardType, tmo, message, fallback);
             LogUtil.e("test readcard ="+ISOUtil.byte2hex(result));
-            int cardType = result[0];
-            switch (cardType) {
+            int RespcardType = result[0];
+            switch (RespcardType) {
                 case 1:
                     //magcard
                     getMagCard(cardReadEntity);
@@ -748,24 +748,25 @@ public class NpPosManager implements INpPosControler {
     }
 
     private void getMagCard(CardReadEntity cardReadEntity) throws SDKException {
-        SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 6);
+        SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
         if (swipeCardResponse != null) {
             if (mListener != null) {
                 CardInfoEntity cardInfoEntity = new CardInfoEntity();
-                try {
-                    String pan = swipeCardResponse.getPan();
-                    String random = pan.substring(pan.length() - 6, pan.length());
-                    DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
-                    cardInfoEntity.setTusn(deviceSN.getTusn());
-                    cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
-                    cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
-                    cardInfoEntity.setKsn(random);
+/*                try {
+                    //String pan = swipeCardResponse.getPan();
+                    //String random = pan.substring(pan.length() - 6, pan.length());
+                    //DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
+                    //cardInfoEntity.setTusn(deviceSN.getTusn());
+                    //cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
+                    //cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
+                    //cardInfoEntity.setKsn(random);
                 } catch (Throwable e) {
                     e.printStackTrace();
-                }
+                }*/
                 cardInfoEntity.setCardType(CardType.MAG_CARD);
-Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
+                Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
                 if (TextUtils.isEmpty(swipeCardResponse.getEncryptedTrack2Data())) {
+                    LogUtil.d("track data no encrypted");
                     cardInfoEntity.setTrack1(swipeCardResponse.getOneTrack());
                     cardInfoEntity.setTrack2(swipeCardResponse.getTwoTrack());
                     cardInfoEntity.setTrack3(swipeCardResponse.getThreeTrack());

@@ -8,7 +8,6 @@ public class DeviceInfoEntity {
     private String ksn;
     private float currentElePer;
     private String firmwareVer;
-    private String SerialNumber;
 
     public DeviceInfoEntity() {
     }
@@ -51,13 +50,5 @@ public class DeviceInfoEntity {
 
     public void setDeviceTypeStr(String temp) {
         this.devicetypestr = temp;
-    }
-
-    public String getSerialNumber() {
-        return SerialNumber;
-    }
-
-    public void setSerialNumber(String serialNumber) {
-        SerialNumber = serialNumber;
     }
 }

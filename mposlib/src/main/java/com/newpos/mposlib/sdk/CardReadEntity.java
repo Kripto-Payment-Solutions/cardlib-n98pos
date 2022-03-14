@@ -6,6 +6,7 @@ public class CardReadEntity {
     private int timeout;
     private String amount;
     private int tradeType;
+    private int readCardType;
 
     public CardReadEntity() {
     }
@@ -41,4 +42,12 @@ public class CardReadEntity {
     public void setTradeType(int tradeType) {
         this.tradeType = tradeType;
     }
+
+    public int getReadCardType(){
+        return this.readCardType;
+    }
+    public void setReadCardType(int type){
+        this.readCardType = type;
+    }
+
 }

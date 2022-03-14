@@ -185,7 +185,16 @@ public class MainActivity extends AppCompatActivity{
             mackey      = "00000000000000000000000000000000"; //clear key
             trackkey    = "C305C4F9B5B84E6CE0A3789FF822101E"; //clear key
 
+            pinkey      = "e534fa1f6992b8a3626aa953e7984473";
+            trackkey    = "69600df994eca70ea0c5c2bd26bbc6e9";
+
+            pinkey      = "7d3becc607c9d70413afe62c88ec000f";
+            trackkey    = "9affd7970d1540822ffa05b6eaaae949";
+
             byte[] IV           = ISOUtil.hex2byte("0000000000000000");
+
+            IV                  = ISOUtil.hex2byte("0000000000000000");
+
             byte[] encryptPIN   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey), ISOUtil.hex2byte(pinkey));
             byte[] PINkcv       = TDesUtil.encryptECB(ISOUtil.hex2byte(pinkey), IV);
             byte[] encryptMAC   = TDesUtil.encryptECB(ISOUtil.hex2byte(masterKey), ISOUtil.hex2byte(mackey));
@@ -378,6 +387,10 @@ public class MainActivity extends AppCompatActivity{
                 case "onDeviceConnected":
                     btnConnectDevice.setText("Disconnect Device");
                     lConnectDevice = true;
+
+                    getPos().clearAID_RID();
+                    getPos().loadAidparam();
+                    getPos().loadCapkparam();
 
                     //ACTUALIZAR MASTER KEY
                     //*********************

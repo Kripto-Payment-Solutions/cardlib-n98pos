@@ -480,82 +480,109 @@ public class Command {
 
     public static TerminalInfo getTerminalInfo() {
         try {
-            // byte[] info = ISOUtil.hex2byte("001230303235374546383846423600034e3538001156323031382e31312e3231003254782bcb95c70b023823d6fe3ed5f111c2d6245e66c23d4dc0cec433d4eda80a03b8");
-            byte[] info =getDeviceInfo();
+            byte[] info = getDeviceInfo();
             if (info == null) {
                 return null;
             }
-            LogUtil.e("getDeviceInfo ="+StringUtil.byteToStr(info));
-            LogUtil.e("getDeviceInfo bytesToHexString="+StringUtil.bytesToHexString(info));
+            LogUtil.e("getDeviceInfo =" + StringUtil.byteToStr(info));
+            LogUtil.e("getDeviceInfo bytesToHexString=" + StringUtil.bytesToHexString(info));
             TerminalInfo terminalInfo = new TerminalInfo();
-            do {
-                byte[] buf;
-                int position = 0;
 
-                int snLen = llvarToLen(info[position++], info[position++]);
-                LogUtil.e("snlen ="+snLen);
-                if (snLen > 0) {
-                    buf = new byte[snLen];
-                    System.arraycopy(info, position, buf, 0, buf.length);
-                    position += buf.length;
-                    LogUtil.e("setStrTUSN ="+StringUtil.byteToStr(buf));
-          //          terminalInfo.setStrTUSN(StringUtil.byteToStr(buf));
-                    terminalInfo.setStrSNCode(StringUtil.byteToStr(buf));
-                    //terminalInfo.setStrSNCode(StringUtil.byteToStr(buf));
-                }
-
+            int icount = 0;
+            byte[] buf;
+            int position = 0;
+            for (icount = 1; icount < 20; icount++) {
                 if (position == info.length) {
                     break;
                 }
-
-                int modelLen = llvarToLen(info[position++], info[position++]);
-                if (modelLen > 0) {
-                    buf = new byte[modelLen];
-                    System.arraycopy(info, position, buf, 0, buf.length);
-                    position += buf.length;
-                    LogUtil.e("setStrProductId ="+StringUtil.byteToStr(buf));
-                    terminalInfo.setStrProductId(StringUtil.byteToStr(buf));
-                }
-                LogUtil.e("snlen ="+modelLen);
-                if (position == info.length) {
+                int iLen = llvarToLen(info[position++], info[position++]);
+                LogUtil.e("ilen =" + iLen);
+                if (iLen <= 0) {
                     break;
                 }
-
-                int appVersionLen = llvarToLen(info[position++], info[position++]);
-                if (appVersionLen > 0) {
-                    buf = new byte[appVersionLen];
-                    System.arraycopy(info, position, buf, 0, buf.length);
-                    position += buf.length;
-                    LogUtil.e("setStrAppVersion ="+StringUtil.byteToStr(buf));
-                    terminalInfo.setStrAppVersion(StringUtil.byteToStr(buf));
-                }
-
-                if (position == info.length) {
+                switch (icount) {
+                    case 1: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("setStrSN =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrSNCode(StringUtil.byteToStr(buf));
+                        break;
+                    }
+                    case 2: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("setStrProductId =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrProductId(StringUtil.byteToStr(buf));
+                        break;
+                    }
+                    case 3: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("setStrAppVersion =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrAppVersion(StringUtil.byteToStr(buf));
+                    }
                     break;
-                }
-
-                int csnLen = llvarToLen(info[position++], info[position++]);
-                if (csnLen > 0) {
-                    buf = new byte[csnLen];
-                    System.arraycopy(info, position, buf, 0, buf.length);
-                    position += buf.length;
-                    LogUtil.e("setStrSNCode ="+StringUtil.byteToStr(buf));
-          //          terminalInfo.setStrSNCode(StringUtil.byteToStr(buf));
-                    terminalInfo.setStrTUSN(StringUtil.byteToStr(buf));
-                }
-
-                if (position == info.length) {
+                    case 4: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("StrHardwareVer =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrHardwareVer(StringUtil.byteToStr(buf));
+                    }
                     break;
+                    case 5: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("StrChipCode =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrChipCode(StringUtil.byteToStr(buf));
+                    }
+                    break;
+                    case 6: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("StrTerminalNum =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrTerminalNum(StringUtil.byteToStr(buf));
+                    }
+                    break;
+                    case 7: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("strCompanyId =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrCompanyId(StringUtil.byteToStr(buf));
+                    }
+                    break;
+                    case 8: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("StrTraceNum =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setStrTraceNum(StringUtil.byteToStr(buf));
+                    }
+                    break;
+                    case 9: {
+                        buf = new byte[iLen];
+                        System.arraycopy(info, position, buf, 0, buf.length);
+                        position += buf.length;
+                        LogUtil.e("strBranchnum =" + StringUtil.byteToStr(buf));
+                        terminalInfo.setstrBranchnum(StringUtil.byteToStr(buf));
+                    }
+                    break;
+                    default:
+                        buf = new byte[iLen];
+                        position += buf.length;
+                        break;
+
                 }
-
-            } while (false);
-
-            return terminalInfo;
-
-        } catch (Throwable e) {
-            if (LogUtil.DEBUG) {
-                e.printStackTrace();
             }
+            return terminalInfo;
+        } catch (SDKException e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -1199,95 +1226,73 @@ public class Command {
         if (responseData != null) {
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
                 byte[] result = responseData.getPacket().getParams();
+                LogUtil.e("card msg =" + StringUtil.byteToStr(result));
+                LogUtil.e("card msg bytesToHexString=" + StringUtil.bytesToHexString(result));
                 SwipeCardResponse data = new SwipeCardResponse();
+
                 int pos = 0;
-                int panLen = llvarToLen(result[pos++], result[pos++]);
+                int iLen ;
+                int icount =0;
+                for(icount =1;icount <10;icount++){
+                    iLen = llvarToLen(result[pos++], result[pos++]);
+                    if(iLen <=0){
+                        break;
+                    }
+                    byte[] tempData = new byte[iLen];
+                    switch(icount){
+                        case 1:
+                            System.arraycopy(result, pos, tempData, 0,iLen);
+                            LogUtil.e("Pan: "+ISOUtil.byte2hex(tempData));
+                            pos += iLen;
+                            data.setPan(StringUtil.byte2HexStr(tempData).toUpperCase().replace("F", ""));
+                            break;
+                        case 2:
+                            System.arraycopy(result, pos, tempData, 0, iLen);
+                            LogUtil.e("track1: "+StringUtil.byteToStr(tempData));
+                            pos += iLen;
+                            if(tempData[0] !=0xff){
+                                data.setOneTrack(StringUtil.byteToStr(tempData));
+                            }
+                            break;
+                        case 3:
+                            System.arraycopy(result, pos, tempData, 0, iLen);
+                            pos += iLen;
+                            String unEncTrack2Data =StringUtil.byteToStr(tempData);
+                            LogUtil.e("track2: "+unEncTrack2Data);
 
-                if (panLen > 0) {
-                    byte[] pan = new byte[panLen];
-                    System.arraycopy(result, pos, pan, 0, pan.length);
-                    pos += pan.length;
-                    data.setPan(StringUtil.byte2HexStr(pan).toUpperCase().replace("F", ""));
-                }
+                            data.setTwoTrack(unEncTrack2Data);
 
-                int oneLen = llvarToLen(result[pos++], result[pos++]);
-                if (oneLen > 0) {
-                    byte[] one = new byte[oneLen];
-                    System.arraycopy(result, pos, one, 0, oneLen);
-                    pos += oneLen;
-                    data.setOneTrack(StringUtil.byteToStr(one));
-                }
-
-                int twiceLen = llvarToLen(result[pos++], result[pos++]);
-                if (twiceLen > 0) {
-                    byte[] twice = new byte[twiceLen];
-                    System.arraycopy(result, pos, twice, 0, twiceLen);
-                    pos += twiceLen;
-
-                    String unEncTrack2Data =ISOUtil.byte2hex(twice);// StringUtil.byteToStr(twice);
-                    Log.e("N98","track 2 ="+unEncTrack2Data);
-//                    unEncTrack2Data = unEncTrack2Data.replace("=", "D");
-                    data.setTwoTrack(unEncTrack2Data);
-
-                    int index = unEncTrack2Data.indexOf("D");
-                    if (index != -1) {
-                        data.setExpiryDate(unEncTrack2Data.substring(index + 1, index + 5));
+                            int index = unEncTrack2Data.indexOf("D");
+                            if (index != -1) {
+                                data.setExpiryDate(unEncTrack2Data.substring(index + 1, index + 5));
+                            }
+                            break;
+                        case 4:
+                            System.arraycopy(result, pos, tempData, 0, iLen);
+                            pos += iLen;
+                            String tdk3 = StringUtil.byteToStr(tempData);
+                            String unEncTrack3Data =ISOUtil.byte2hex(tempData);
+                            LogUtil.e("track 3 ="+unEncTrack3Data);
+                            LogUtil.e("tdk3="+tdk3);
+                            data.setThreeTrack(unEncTrack3Data);
+                            break;
+                        case 5:
+                            System.arraycopy(result, pos, tempData, 0, iLen);
+                            pos += iLen;
+                            String servicecode = StringUtil.byteToStr(tempData);
+                            data.setTrack2Servicecode(servicecode);
+                            break;
+                        case 6:
+                        case 7:
+                        case 8:
+                        default:
+                            break;
+                    }
+                    data.setCardType(SwipeCardResponse.CardType.TRACK);
+                    if (pos == result.length) {
+                        break;
                     }
                 }
-
-                int threeLen = llvarToLen(result[pos++], result[pos++]);
-                if (threeLen > 0) {
-                    byte[] three = new byte[threeLen];
-                    System.arraycopy(result, pos, three, 0, threeLen);
-                    pos += threeLen;
-          //          String tdk3 = StringUtil.byteToStr(three).replace("=", "D");
-                    String tdk3 = StringUtil.byteToStr(three);
-                    String unEncTrack3Data =ISOUtil.byte2hex(three);// StringUtil.byteToStr(twice);
-                    Log.e("N98","track 3 ="+unEncTrack3Data);
-                    Log.e("N98","tdk3="+tdk3);
-                    data.setThreeTrack(unEncTrack3Data);
-                }
-                data.setCardType(SwipeCardResponse.CardType.TRACK);
-                int service_code_len=llvarToLen(result[pos++], result[pos++]);
-                if(service_code_len>0){
-                    byte []service_code=new byte[service_code_len];
-                    System.arraycopy(result, pos, service_code, 0, service_code_len);
-                    pos += service_code_len;
-                    //          String tdk3 = StringUtil.byteToStr(three).replace("=", "D");
-                    String servicecode = StringUtil.byteToStr(service_code);
-                    data.setTrack2Servicecode(servicecode);
-                }
-                if (pos == result.length) {
-                    return data;
-                }
-/**
-                int encryptOneLen = llvarToLen(result[pos++], result[pos++]);
-                if (encryptOneLen > 0) {
-                    byte[] encryptOne = new byte[encryptOneLen];
-                    System.arraycopy(result, pos, encryptOne, 0, encryptOneLen);
-                    pos += encryptOneLen;
-                    String encryptTdk1 = StringUtil.byteToStr(encryptOne).replace("=", "D");
-                    data.setEncryptedTrack1Data(encryptTdk1);
-                }
-
-                int encryptTdk2Len = llvarToLen(result[pos++], result[pos++]);
-                if (encryptTdk2Len > 0) {
-                    byte[] encrypt2 = new byte[encryptTdk2Len];
-                    System.arraycopy(result, pos, encrypt2, 0, encryptTdk2Len);
-                    pos += encryptTdk2Len;
-                    String encryptTdk2 = StringUtil.byteToStr(encrypt2).replace("=", "D");
-                    data.setEncryptedTrack2Data(encryptTdk2);
-                }
-
-                int encryptTdk3Len = llvarToLen(result[pos++], result[pos++]);
-                if (encryptTdk3Len > 0) {
-                    byte[] encrypt3 = new byte[encryptTdk3Len];
-                    System.arraycopy(result, pos, encrypt3, 0, encryptTdk3Len);
-                    pos += encryptTdk3Len;
-                    String encryptTdk3 = StringUtil.byteToStr(encrypt3).replace("=", "D");
-                    data.setEncryptedTrack3Data(encryptTdk3);
-                }
- ***/
                 return data;
             } else {
                 throw new SDKException(responseData.getRespCode());
