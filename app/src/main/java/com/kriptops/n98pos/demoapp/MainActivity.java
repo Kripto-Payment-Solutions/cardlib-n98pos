@@ -388,9 +388,11 @@ public class MainActivity extends AppCompatActivity{
                     btnConnectDevice.setText("Disconnect Device");
                     lConnectDevice = true;
 
+                    /*
                     getPos().clearAID_RID();
                     getPos().loadAidparam();
                     getPos().loadCapkparam();
+                     */
 
                     //ACTUALIZAR MASTER KEY
                     //*********************

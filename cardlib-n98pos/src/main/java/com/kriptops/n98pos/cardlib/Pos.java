@@ -629,10 +629,13 @@ public class Pos {
         CardReadEntity cardReadEntitys =  new CardReadEntity();
         cardReadEntitys.setSupportFallback(false);
         cardReadEntitys.setTimeout(30);
-        cardReadEntitys.setAmount("000000005501");
+        cardReadEntitys.setAmount("000000080000");
         //cardReadEntitys.setAmount(amount);
         //0x01 mag 0x02 icc  0x04 nfc
-        cardReadEntitys.setTradeType(0x01 | 0x02 | 0x04);
+        //cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+        //cardReadEntitys.setReadCardType(0x04);
+        cardReadEntitys.setReadCardType(0x01 | 0x02 );
+        cardReadEntitys.setTradeType(0);
         posManager.readCard(cardReadEntitys);
     }
 
