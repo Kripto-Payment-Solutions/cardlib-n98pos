@@ -75,6 +75,17 @@
                 android:visibility="visible"
                 tools:visibility="visible" />
 
+            <EditText
+                android:id="@+id/txt_pan"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="@string/digits"
+                android:ems="10"
+                android:hint="@string/txt_pan"
+                android:inputType="number"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -104,6 +115,31 @@
                     android:layout_marginLeft="8dp"
                     android:onClick="btn_serial_number"
                     android:text="@string/btn_serial_number" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                tools:visibility="visible">
+
+                <Button
+                    android:id="@+id/btn_input_amount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_input_amount"
+                    android:text="@string/btn_input_amount" />
+
+                <Button
+                    android:id="@+id/btn_input_pin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_input_pin"
+                    android:text="@string/btn_input_pin" />
+
             </LinearLayout>
 
             <TextView

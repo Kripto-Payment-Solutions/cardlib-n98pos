@@ -41,6 +41,7 @@ import com.newpos.mposlib.util.ISOUtil;
 
 import java.lang.ref.WeakReference;
 import java.security.PrivateKey;
+import java.util.List;
 
 import javax.crypto.Cipher;
 
@@ -524,7 +525,19 @@ public class Pos {
         }
     }
 
-    public void loadAidparam(){
+    public void loadAidparam(List<String> lstAIDS){
+        if(posManager.isConnected()) {
+            for(String str : lstAIDS){
+                posManager.addAid(str);
+            }
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
+
+        /*
         //VISA EMV
         //A0000000031010
         posManager.addAid("00A6DF80800001009C01009F0607A0000000031010DF8080600101DF80800281879F01061234567890129F090200029F160F3132333435363738393031323334359F150212349F4E0D54657374204D65726368616E749F1C0846726F6E743132339F1A0208409F3501229F3303E0F8E89F4005F000F0F001DF80806106000000100000DF808020050000000000DF808021050000000000DF8080220500000000009F1B0400000000");
@@ -549,10 +562,23 @@ public class Pos {
         //MasterCard PAYPASS
         //A0000000041010
         posManager.addAid("00D0DF80800001029C01009F0607A0000000041010DF8080600101DF80800281B19f37047961ab19DF811F01c8DF81170160DF81180160DF811901089f3501229f09020002DF80802A06000020000000DF80802B06000010001000DF80802C06000000010000DF812506000099999999DF812306000000000000DF812406000099999999DF812005F45084800CDF8121050000000000DF812205F45084800CDF8126060000000100009F6604268000009F1B04000000009f1a0203929F1D082C00800000000000DF811B01B09F3303E0F8C8");
+        */
 
     }
 
-    public void loadCapkparam(){
+    public void loadCapkparam(List<String> lstCAPKS){
+        if(posManager.isConnected()) {
+            for(String str : lstCAPKS){
+                posManager.addRid(str);
+            }
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
+
+        /*
         //A000000003
         // 0x08
         posManager.addRid("00CADF80801005A0000000039F220108DF80801181B0D9FD6ED75D51D0E30664BD157023EAA1FFA871E4DA65672B863D255E81E137A51DE4F72BCC9E44ACE12127F87E263D3AF9DD9CF35CA4A7B01E907000BA85D24954C2FCA3074825DDD4C0C8F186CB020F683E02F2DEAD3969133F06F7845166ACEB57CA0FC2603445469811D293BFEFBAFAB57631B3DD91E796BF850A25012F1AE38F05AA5C4D6D03B1DC2E568612785938BBC9B3CD3A910C1DA55A5A9218ACE0F7A21287752682F15832A678D6E1ED0BDF8080120103");
@@ -594,6 +620,7 @@ public class Pos {
         posManager.addRid("00CADF80801005A0000000039F220108DF80801181B0D9FD6ED75D51D0E30664BD157023EAA1FFA871E4DA65672B863D255E81E137A51DE4F72BCC9E44ACE12127F87E263D3AF9DD9CF35CA4A7B01E907000BA85D24954C2FCA3074825DDD4C0C8F186CB020F683E02F2DEAD3969133F06F7845166ACEB57CA0FC2603445469811D293BFEFBAFAB57631B3DD91E796BF850A25012F1AE38F05AA5C4D6D03B1DC2E568612785938BBC9B3CD3A910C1DA55A5A9218ACE0F7A21287752682F15832A678D6E1ED0BDF8080120103");
 
         posManager.addRid("00CADF80801005A0000000039F220108DF80801181B0D9FD6ED75D51D0E30664BD157023EAA1FFA871E4DA65672B863D255E81E137A51DE4F72BCC9E44ACE12127F87E263D3AF9DD9CF35CA4A7B01E907000BA85D24954C2FCA3074825DDD4C0C8F186CB020F683E02F2DEAD3969133F06F7845166ACEB57CA0FC2603445469811D293BFEFBAFAB57631B3DD91E796BF850A25012F1AE38F05AA5C4D6D03B1DC2E568612785938BBC9B3CD3A910C1DA55A5A9218ACE0F7A21287752682F15832A678D6E1ED0BDF8080120103");
+        */
     }
 
     public void clearAID_RID(){
@@ -625,18 +652,24 @@ public class Pos {
 
         //this.clearAIDS();
         //this.setTagAIDs();
-
-        CardReadEntity cardReadEntitys =  new CardReadEntity();
-        cardReadEntitys.setSupportFallback(false);
-        cardReadEntitys.setTimeout(30);
-        cardReadEntitys.setAmount("000000080000");
-        //cardReadEntitys.setAmount(amount);
-        //0x01 mag 0x02 icc  0x04 nfc
-        //cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
-        //cardReadEntitys.setReadCardType(0x04);
-        cardReadEntitys.setReadCardType(0x01 | 0x02 );
-        cardReadEntitys.setTradeType(0);
-        posManager.readCard(cardReadEntitys);
+        if(posManager.isConnected()) {
+            CardReadEntity cardReadEntitys =  new CardReadEntity();
+            cardReadEntitys.setSupportFallback(false);
+            cardReadEntitys.setTimeout(30);
+            cardReadEntitys.setAmount(amount); //"000000080000"
+            //cardReadEntitys.setAmount(amount);
+            //0x01 mag 0x02 icc  0x04 nfc
+            //cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            cardReadEntitys.setReadCardType(0x04);
+            //cardReadEntitys.setReadCardType(0x01 | 0x02 );
+            cardReadEntitys.setTradeType(0);
+            posManager.readCard(cardReadEntitys);
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
     }
 
     /**
@@ -649,6 +682,35 @@ public class Pos {
      */
     public void beginTransaction(String date, String time, String tsc, String amount) {
         this.beginTransaction(date, time, tsc, amount, false);
+    }
+
+    public void inputAmount(){
+        if(posManager.isConnected()) {
+            InputInfoEntity inputInfoEntity = new InputInfoEntity();
+            inputInfoEntity.setInputType(0);
+            inputInfoEntity.setTimeout(30);
+            posManager.getInputInfoFromKB(inputInfoEntity);
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
+    }
+
+    public void inputPin(String pan){
+        if(posManager.isConnected()) {
+            InputInfoEntity inputInfoEntityd = new InputInfoEntity();
+            inputInfoEntityd.setInputType(1);
+            inputInfoEntityd.setTimeout(35);
+            inputInfoEntityd.setPan(pan);//6226220633452981    "4779042200107095"
+            posManager.getInputInfoFromKB(inputInfoEntityd);
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
     }
 
     /// para el control del pinpad

@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.kriptops.n98pos.cardlib.Defaults;
 import com.kriptops.n98pos.cardlib.EMVConfig;
 import com.kriptops.n98pos.cardlib.Pinpad;
 import com.kriptops.n98pos.cardlib.Pos;
@@ -63,6 +64,8 @@ public class MainActivity extends AppCompatActivity{
     private EditText macKey;
     private EditText plainText;
     private EditText encriptedText;
+    private EditText inputAmount;
+    private EditText pan;
     private TextView log;
 
     private String KEK = "";
@@ -106,8 +109,8 @@ public class MainActivity extends AppCompatActivity{
         getPos().setOnError(this::onError);
         getPos().setOnSuccess(this::onSuccess);
 
-        //posManager = NpPosManager.sharedInstance(getApplicationContext(), this);
-        //testNpPosManager = new TestNpManager(getApplicationContext(), this);
+        this.pan = this.findViewById(R.id.txt_pan);
+        this.pan.setText("4779042200107095");
     }
 
     @Override
@@ -261,6 +264,14 @@ public class MainActivity extends AppCompatActivity{
         //BluetoothActivity.actionStart(MainActivity.this,"This");
     }
 
+    public void btn_input_amount(View btn){
+        getPos().inputAmount();
+    }
+
+    public void btn_input_pin(View btn){
+        getPos().inputPin(this.pan.getText().toString());
+    }
+
     public void btn_encriptar(View btn) {
         // Log.d(Defaults.LOG_TAG, "Cifrar");
         //este primer paso es necesario porque yo tengo data ascii y no hex string
@@ -357,7 +368,7 @@ public class MainActivity extends AppCompatActivity{
                 "210820", // fecha en formato
                 "030800",
                 "00000001",
-                "100"
+                "000000080000"
                 //,false //agregar para hacer el cashback
         );
     }
@@ -388,11 +399,10 @@ public class MainActivity extends AppCompatActivity{
                     btnConnectDevice.setText("Disconnect Device");
                     lConnectDevice = true;
 
-                    /*
                     getPos().clearAID_RID();
-                    getPos().loadAidparam();
-                    getPos().loadCapkparam();
-                     */
+                    getPos().loadAidparam(Defaults.AIDS);
+                    getPos().loadCapkparam(Defaults.CAPKS);
+
 
                     //ACTUALIZAR MASTER KEY
                     //*********************
@@ -488,8 +498,24 @@ public class MainActivity extends AppCompatActivity{
                             LogUtil.d("onGetDeviceInfo",cardInfoEntity.getCardNumber());
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + cardInfoEntity.getCardNumber(), Toast.LENGTH_SHORT).show();
                             log.setText(cardInfoEntity.getCardNumber());
+                            pan.setText(cardInfoEntity.getCardNumber());
+
                         }
                     });
+                    break;
+
+                case "onGetReadInputInfo":
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onGetReadInputInfo",responsePos.getInputInfo());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getInputInfo(), Toast.LENGTH_SHORT).show();
+                            log.setText(responsePos.getInputInfo());
+
+                        }
+                    });
+
                     break;
             }
         });
