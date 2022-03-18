@@ -140,6 +140,14 @@
                     android:onClick="btn_input_pin"
                     android:text="@string/btn_input_pin" />
 
+                <Button
+                    android:id="@+id/btn_load_param"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_load_param"
+                    android:text="@string/btn_load_param" />
+
             </LinearLayout>
 
             <TextView

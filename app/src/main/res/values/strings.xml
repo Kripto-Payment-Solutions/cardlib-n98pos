@@ -11,6 +11,7 @@
     <string name="btn_serial_number">S. Number</string>
     <string name="btn_input_amount">I. Amount</string>
     <string name="btn_input_pin">I. Pin</string>
+    <string name="btn_load_param">LD. A _ C</string>
     <string name="get_device_info">Get Device Info</string>
     <string name="add_aid_success">Add AID Success</string>
     <string name="btn_imprimir">Imprimir</string>
