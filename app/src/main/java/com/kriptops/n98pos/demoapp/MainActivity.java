@@ -1,19 +1,25 @@
 package com.kriptops.n98pos.demoapp;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -81,6 +87,17 @@ public class MainActivity extends AppCompatActivity{
     private NpPosManager posManager;
     private TestNpManager testNpPosManager;
 
+    private static final String[] BLE_PERMISSIONS = new String[]{
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
+
+    @RequiresApi(api = Build.VERSION_CODES.S)
+    private static final String[] ANDROID_12_BLE_PERMISSIONS = new String[]{
+            Manifest.permission.BLUETOOTH_SCAN,
+            Manifest.permission.BLUETOOTH_CONNECT
+    };
+
     //@Override
     public Pos getPos() {
         return ((PosApp) this.getApplication()).getPos();
@@ -118,6 +135,8 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+
+
     /**
      * Android 6.0上动态申请蓝牙权限 -- Solicitar dinámicamente permisos de Bluetooth en
      *
@@ -125,7 +144,22 @@ public class MainActivity extends AppCompatActivity{
      * @param requestCode 请求码 -- código de solicitud
      * @param showText    若弹Toast提示，需要显示的信息  -- Si se muestra el indicador Toast, la información que se mostrará
      */
+    //@RequiresApi(api = Build.VERSION_CODES.S)
     private void requestBtPermission(Activity activity, int requestCode, String showText) {
+
+        if (Build.VERSION.SDK_INT >= 30){
+            if (!Environment.isExternalStorageManager()){
+                Intent getpermission = new Intent();
+                getpermission.setAction(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivity(getpermission);
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            ActivityCompat.requestPermissions(activity, ANDROID_12_BLE_PERMISSIONS, requestCode);
+        else
+            ActivityCompat.requestPermissions(activity, BLE_PERMISSIONS, requestCode);
+
         if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(activity, new String[]{
                     android.Manifest.permission.ACCESS_COARSE_LOCATION
