@@ -532,6 +532,9 @@ public class MainActivity extends AppCompatActivity{
                 case "onGetReadCardInfo":
                     CardInfoEntity cardInfoEntity = (CardInfoEntity) responsePos.getObjResp();
 
+                    System.out.println("***********cardInfoEntity*************");
+                    System.out.print(cardInfoEntity);
+
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
@@ -539,6 +542,7 @@ public class MainActivity extends AppCompatActivity{
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + cardInfoEntity.getCardNumber(), Toast.LENGTH_SHORT).show();
                             log.setText(cardInfoEntity.getCardNumber());
                             pan.setText(cardInfoEntity.getCardNumber());
+                            log.setText(cardInfoEntity.toString());
                         }
                     });
                     break;

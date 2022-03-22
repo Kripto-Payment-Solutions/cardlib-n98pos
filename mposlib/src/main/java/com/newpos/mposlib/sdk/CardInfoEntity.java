@@ -1,5 +1,8 @@
 package com.newpos.mposlib.sdk;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 public class CardInfoEntity {
 
     private int cardType;
@@ -15,6 +18,12 @@ public class CardInfoEntity {
     private String encryptedSN;
     private String deviceType;
     private String ksn;
+
+    private String panSequenceNumber; //cardSeq;
+    private String maskedPan; //cardSeq;
+    private String emv;
+    private String bin;
+    private String captureType;
 
     public CardInfoEntity() {
     }
@@ -121,5 +130,66 @@ public class CardInfoEntity {
 
     public void setKsn(String ksn) {
         this.ksn = ksn;
+    }
+
+    public String getPanSequenceNumber() {
+        return panSequenceNumber;
+    }
+
+    public void setPanSequenceNumber(String panSequenceNumber) {
+        this.panSequenceNumber = panSequenceNumber;
+    }
+
+    public String getMaskedPan() {
+        return maskedPan;
+    }
+
+    public void setMaskedPan(String maskedPan) {
+        this.maskedPan = maskedPan;
+    }
+
+    public String getEmv() {
+        return emv;
+    }
+
+    public void setEmv(String emv) {
+        this.emv = emv;
+    }
+
+    public String getBin() {
+        return bin;
+    }
+
+    public void setBin(String bin) {
+        this.bin = bin;
+    }
+
+    public String getCaptureType() {
+        return captureType;
+    }
+
+    public void setCaptureType(String captureType) {
+        this.captureType = captureType;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Field field : this.getClass().getDeclaredFields()) {
+            String item;
+            if(! field.getType().getSimpleName().equals("ArrayList")) {
+                try {
+                    Object value = field.get(this);
+                    item = String.format("%s %s %s: %s%n", Modifier.toString(field.getModifiers()), field.getType().getSimpleName(), field.getName(), String.valueOf(value));
+                    sb.append(item);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                item = String.format("%s %s %s: ArrayList<>%n", Modifier.toString(field.getModifiers()), field.getType().getSimpleName(), field.getName());
+                sb.append(item);
+            }
+        }
+        return sb.toString();
     }
 }

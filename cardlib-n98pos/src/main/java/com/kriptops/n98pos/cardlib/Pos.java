@@ -1,5 +1,7 @@
 package com.kriptops.n98pos.cardlib;
 
+import static com.cloudpos.jniinterface.EMVJNIInterface.emv_get_tag_data;
+
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.media.AudioManager;
@@ -218,6 +220,8 @@ public class Pos {
                     ResponsePos<CardInfoEntity> response = new ResponsePos<CardInfoEntity>();
                     response.setNameEvent("onGetReadCardInfo");
                     response.setObjResp(cardInfoEntity);
+
+                    readAppData(cardInfoEntity);
 
                     raiseSuccess("onGetReadCardInfo", response);
 
@@ -468,6 +472,47 @@ public class Pos {
         return this.pinpad;
     }
 
+    private void readAppData(CardInfoEntity cardInfoEntity) {
+        TransactionData data = new TransactionData();
+        data.track2 = cardInfoEntity.getTrack2();
+        if (cardInfoEntity.getTrack2() != null) {
+            //Pure unmodified track2
+            if (data.track2.endsWith("F" )) {
+                data.track2 = data.track2.substring(0, data.track2.length() - 1);
+            }
+        }
+        data.maskedPan = cardInfoEntity.getTrack2().split("[D=]")[0];
+        data.track2 = this.posOptions.getTrack2FitMode().fit(data.track2);
+        data.track2 = this.posOptions.getTrack2PaddingMode().pad(data.track2);
+        //data.track2 = this.pinpad.encryptHex(data.track2);   //encryta el track2 con el pinpad
+
+        //data.maskedPan = Util.nvl(data.maskedPan, () -> this.readTag(0x5a));
+        //data.track2Clear = Util.nvl(data.track2Clear, () -> this.readTag(0x57));
+        //data.track2 = data.track2Clear;
+        /*
+        data.panSequenceNumber = Util.nvl(data.panSequenceNumber, () -> this.readTag(0x5f34));
+        data.expiry = Util.nvl(data.expiry, () -> this.readTag(0x5f24));
+        data.aid = Util.nvl(data.aid, () -> this.readTag(0x84));
+        data.ecBalance = Util.nvl(data.ecBalance, () -> this.readTag(0x9f79));
+        if (data.maskedPan == null) {
+            data.maskedPan = data.track2.split("D")[0];
+        }
+        */
+    }
+
+    protected String readTag(int tag) {
+        //if (isTagPresent(tag)) {
+            byte[] buffer = new byte[1024];
+            int read_length = emv_get_tag_data(tag, buffer, buffer.length);
+            if (read_length < 0) return null;
+            if (read_length == 0) return "";
+            byte[] tagData = new byte[read_length];
+            System.arraycopy(buffer, 0, tagData, 0, read_length);
+            return Util.toHexString(tagData);
+        //}
+        //return null;
+    }
+
     /**
      * Realiza una operacion atomica con el pinpad preservando el estado anterior.
      * Si el pinpad se encuentra abierto mantiene la sesion de trabajo abierta.
@@ -659,8 +704,8 @@ public class Pos {
             cardReadEntitys.setAmount(amount); //"000000080000"
             //cardReadEntitys.setAmount(amount);
             //0x01 mag 0x02 icc  0x04 nfc
-            //cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
-            cardReadEntitys.setReadCardType(0x04);
+            cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            //cardReadEntitys.setReadCardType(0x04);
             //cardReadEntitys.setReadCardType(0x01 | 0x02 );
             cardReadEntitys.setTradeType(0);
             posManager.readCard(cardReadEntitys);

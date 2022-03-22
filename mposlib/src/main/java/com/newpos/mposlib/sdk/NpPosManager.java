@@ -588,6 +588,7 @@ public class NpPosManager implements INpPosControler {
                     mContext.getString(R.string.device_get_battery_error_desc));
         }
     }
+
     public void readCard_UPTS(final CardReadEntity cardReadEntity) {
         try {
    //         checkEmvParams();
@@ -661,6 +662,7 @@ public class NpPosManager implements INpPosControler {
         }
 
     }
+
     @Override
     public void readCard(final CardReadEntity cardReadEntity) {
         try {
@@ -749,6 +751,8 @@ public class NpPosManager implements INpPosControler {
 
     private void getMagCard(CardReadEntity cardReadEntity) throws SDKException {
         SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
+        System.out.println("*************swipeCardResponse**************");
+        System.out.println(swipeCardResponse);
         if (swipeCardResponse != null) {
             if (mListener != null) {
                 CardInfoEntity cardInfoEntity = new CardInfoEntity();
@@ -776,6 +780,8 @@ public class NpPosManager implements INpPosControler {
                     cardInfoEntity.setTrack3(swipeCardResponse.getEncryptedTrack3Data());
                 }
                 cardInfoEntity.setCardNumber(swipeCardResponse.getPan());
+                cardInfoEntity.setMaskedPan(swipeCardResponse.getPan());
+                cardInfoEntity.setCaptureType("msr");
                 cardInfoEntity.setExpDate(swipeCardResponse.getExpiryDate());
                 cardInfoEntity.setCsn(swipeCardResponse.getCarSeq());
                 cardInfoEntity.setIc55Data(swipeCardResponse.getIcParams());
@@ -791,6 +797,7 @@ public class NpPosManager implements INpPosControler {
         public final static int SALE = 0;
         public final static int GET_CARD_NUMBER = 1;
     }
+
     private void processEMVtag( byte[] result )
     {
         LogUtil.e("test readcard ="+ISOUtil.byte2hex(result));
@@ -1020,6 +1027,8 @@ public class NpPosManager implements INpPosControler {
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         cardInfoEntity.setCardType(CardType.IC_CARD);
                         cardInfoEntity.setCardNumber(pan);
+                        cardInfoEntity.setMaskedPan(pan);
+                        //cardInfoEntity.setPanSequenceNumber(card);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1208,6 +1217,9 @@ public class NpPosManager implements INpPosControler {
                             cardInfoEntity.setTrack3("");
                         }
                         cardInfoEntity.setCardNumber(pan);
+                        cardInfoEntity.setMaskedPan(pan);
+                        cardInfoEntity.setCaptureType("icc");
+                        cardInfoEntity.setPanSequenceNumber(cardSeq);
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
@@ -1431,6 +1443,9 @@ public class NpPosManager implements INpPosControler {
                             cardInfoEntity.setTrack3("");
                         }
                         cardInfoEntity.setCardNumber(pan);
+                        cardInfoEntity.setMaskedPan(pan);
+                        cardInfoEntity.setCaptureType("nfc");
+                        cardInfoEntity.setPanSequenceNumber(cardSeq);
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
