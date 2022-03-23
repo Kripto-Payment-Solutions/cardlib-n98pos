@@ -1551,6 +1551,7 @@ public class Command {
             throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
         }
     }
+
     public static String inputAmount(byte tmo, byte[] displayData) throws SDKException {
         byte[] params = new byte[(displayData.length + 3)];
         int pos = 0;

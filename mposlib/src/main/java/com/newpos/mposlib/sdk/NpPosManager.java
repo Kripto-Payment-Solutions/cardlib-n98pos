@@ -740,7 +740,6 @@ public class NpPosManager implements INpPosControler {
                 onError(ERRORS.DEVICE_READ_CARD_ERROR, mContext.getString(R.string.device_read_card_fail));
             }
         }
-
     }
 
     final static class CardType {
@@ -752,7 +751,7 @@ public class NpPosManager implements INpPosControler {
     private void getMagCard(CardReadEntity cardReadEntity) throws SDKException {
         SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
         System.out.println("*************swipeCardResponse**************");
-        System.out.println(swipeCardResponse);
+        System.out.println(swipeCardResponse.toString());
         if (swipeCardResponse != null) {
             if (mListener != null) {
                 CardInfoEntity cardInfoEntity = new CardInfoEntity();
@@ -798,8 +797,7 @@ public class NpPosManager implements INpPosControler {
         public final static int GET_CARD_NUMBER = 1;
     }
 
-    private void processEMVtag( byte[] result )
-    {
+    private void processEMVtag(byte[] result) {
         LogUtil.e("test readcard ="+ISOUtil.byte2hex(result));
         Map<String, String> dataMap = TlvUtil.tlvToMap(result);
         String executeResult = (String) dataMap.get("DF75");
@@ -997,6 +995,7 @@ public class NpPosManager implements INpPosControler {
             return;
         }
     }
+
     private void getIcCard(final CardReadEntity cardReadEntity) throws SDKException {
         if (mListener != null) {
             mListener.onDetachedIC();
@@ -1973,5 +1972,4 @@ public class NpPosManager implements INpPosControler {
             }
         }
     }
-
 }

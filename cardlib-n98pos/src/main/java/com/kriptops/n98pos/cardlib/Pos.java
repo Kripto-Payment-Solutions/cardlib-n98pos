@@ -14,9 +14,12 @@ import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
+import com.cloudpos.AlgorithmConstants;
 import com.cloudpos.DeviceException;
 import com.cloudpos.OperationResult;
 import com.cloudpos.jniinterface.EMVJNIInterface;
+import com.cloudpos.pinpad.KeyInfo;
+import com.cloudpos.pinpad.PINPadDevice;
 import com.cloudpos.pinpad.PINPadOperationResult;
 import com.cloudpos.printer.PrinterDevice;
 import com.kriptops.n98pos.cardlib.android.BluetoothApp;
@@ -54,6 +57,7 @@ public class Pos {
     //TODO migrate to new infrastructure
     private final Emv emv;
     private final Pinpad pinpad;
+    private final PinpadNPos pinpadNPos;
     private final Msr msr;
 
     private final PosOptions posOptions;
@@ -251,7 +255,11 @@ public class Pos {
 
         @Override
         public void onCancelReadCard() {
-
+            Context context = posApp.getApplicationContext();
+            ResponsePos response = new ResponsePos();
+            response.setNameEvent("onCancelReadCard");
+            response.setMessage(context.getText(R.string.cancel_trade).toString());
+            raiseSuccess("onCancelReadCard", response);
         }
 
         @Override
@@ -351,6 +359,13 @@ public class Pos {
         //debe ir antes que la creacion del emv kernel
         this.msr = new Msr(this.terminal.getMsr().getDevice());
         this.emv = null; //new Emv(this, posApp.getApplicationContext());
+
+        this.pinpadNPos = new PinpadNPos(this.posOptions.getIvController());
+
+        this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_DATA, this.pinpadNPos.DEFAULT_IV);
+        this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_PIN, this.pinpadNPos.DEFAULT_IV);
+        this.pinpadNPos.setIvController(this.posOptions.getIvController());
+
         this.pinpad = new Pinpad(this.terminal.getPinpad().getDevice(), this.posOptions.getIvController());
         //this.withPinpad(this::configPinpad);
 
@@ -484,7 +499,11 @@ public class Pos {
         data.maskedPan = cardInfoEntity.getTrack2().split("[D=]")[0];
         data.track2 = this.posOptions.getTrack2FitMode().fit(data.track2);
         data.track2 = this.posOptions.getTrack2PaddingMode().pad(data.track2);
+        data.bin = data.maskedPan.substring(0, 6);
         //data.track2 = this.pinpad.encryptHex(data.track2);   //encryta el track2 con el pinpad
+
+        cardInfoEntity.setTrack2(data.track2);
+        cardInfoEntity.setBin(data.bin);
 
         //data.maskedPan = Util.nvl(data.maskedPan, () -> this.readTag(0x5a));
         //data.track2Clear = Util.nvl(data.track2Clear, () -> this.readTag(0x57));
@@ -727,6 +746,17 @@ public class Pos {
      */
     public void beginTransaction(String date, String time, String tsc, String amount) {
         this.beginTransaction(date, time, tsc, amount, false);
+    }
+
+    public void cancelTransaction(){
+        if(posManager.isConnected()) {
+            posManager.cancelTrade();
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
+            raiseWarning("device_not_connect", messageShow);
+        }
     }
 
     public void inputAmount(){

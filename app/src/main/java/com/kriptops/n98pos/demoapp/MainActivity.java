@@ -135,8 +135,6 @@ public class MainActivity extends AppCompatActivity{
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-
-
     /**
      * Android 6.0上动态申请蓝牙权限 -- Solicitar dinámicamente permisos de Bluetooth en
      *
@@ -555,6 +553,20 @@ public class MainActivity extends AppCompatActivity{
                             LogUtil.d("onGetReadInputInfo",responsePos.getInputInfo());
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getInputInfo(), Toast.LENGTH_SHORT).show();
                             log.setText(responsePos.getInputInfo());
+
+                        }
+                    });
+
+                    break;
+
+                case "onCancelReadCard":
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onCancelReadCard",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            log.setText(responsePos.getMessage());
 
                         }
                     });

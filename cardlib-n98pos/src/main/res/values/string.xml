@@ -20,6 +20,7 @@
     <string name="device_disconnect">Device Disconnect !</string>
     <string name="get_device_info">Get Device Info!</string>
     <string name="add_aid_success">Add AID Success</string>
+    <string name="cancel_trade">Transaction Canceled</string>
     <string name="blue_no_priority">BlueTooth No Authority</string>
     <string name="request_permission">Request Permission</string>
     <string name="update_master_key_success">Update Master Key Success</string>
