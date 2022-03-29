@@ -24,6 +24,8 @@ public class CardInfoEntity {
     private String emv;
     private String bin;
     private String captureType;
+    private String aid;
+    private String encryptTrack2;
 
     public CardInfoEntity() {
     }
@@ -170,6 +172,22 @@ public class CardInfoEntity {
 
     public void setCaptureType(String captureType) {
         this.captureType = captureType;
+    }
+
+    public String getAid() {
+        return aid;
+    }
+
+    public void setAid(String aid) {
+        this.aid = aid;
+    }
+
+    public String getEncryptTrack2() {
+        return encryptTrack2;
+    }
+
+    public void setEncryptTrack2(String encryptTrack2) {
+        this.encryptTrack2 = encryptTrack2;
     }
 
     @Override

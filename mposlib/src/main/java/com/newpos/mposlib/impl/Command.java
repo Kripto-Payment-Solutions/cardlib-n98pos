@@ -1,8 +1,7 @@
 package com.newpos.mposlib.impl;
 
-import android.util.Log;
-
-import com.newpos.mposlib.BuildConfig;
+//import android.util.Log;
+//import com.newpos.mposlib.BuildConfig;
 import com.newpos.mposlib.api.CommandCallback;
 import com.newpos.mposlib.bluetooth.BluetoothService;
 import com.newpos.mposlib.exception.SDKException;
@@ -25,7 +24,6 @@ import com.newpos.mposlib.util.TimeUtils;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
