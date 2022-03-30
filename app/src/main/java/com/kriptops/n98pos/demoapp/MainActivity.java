@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity{
         this.masterKey = this.findViewById(R.id.txt_llave_master);
         // Setear con la configuracion de la MK de pruebas asignada
         //this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
-        this.masterKey.setText("7C539EFD77EA6BAB51314BB1BF681C60");
+        this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
         this.pinKey = this.findViewById(R.id.txt_llave_pin);
         this.dataKey = this.findViewById(R.id.txt_llave_datos);
         this.macKey = this.findViewById(R.id.txt_llave_mac);
@@ -436,11 +436,6 @@ public class MainActivity extends AppCompatActivity{
                 case "onDeviceConnected":
                     btnConnectDevice.setText("Disconnect Device");
                     lConnectDevice = true;
-                    /*
-                    getPos().clearAID_RID();
-                    getPos().loadAidparam(Defaults.AIDS);
-                    getPos().loadCapkparam(Defaults.CAPKS);
-                    */
 
                     //ACTUALIZAR MASTER KEY
                     //*********************
@@ -475,6 +470,7 @@ public class MainActivity extends AppCompatActivity{
                     if(lunpack){
                         //Actualizamos la master key
                         LogUtil.e("update master key kek =" + KEK);
+
                         String masterkey = this.masterKey.getText().toString();
                         byte []encrypt  = TDesUtil.encryptECB(ISOUtil.hex2byte(KEK),ISOUtil.hex2byte(masterkey));
                         LogUtil.e("update master key encrypt =" + ISOUtil.byte2hex(encrypt));
