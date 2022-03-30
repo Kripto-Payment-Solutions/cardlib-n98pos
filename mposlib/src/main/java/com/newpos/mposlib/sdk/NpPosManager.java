@@ -591,6 +591,7 @@ public class NpPosManager implements INpPosControler {
 
     public void readCard_UPTS(final CardReadEntity cardReadEntity) {
         try {
+            LogUtil.e("readCard_UPTS");
    //         checkEmvParams();
             byte type = 7;
             byte tmo = (byte) cardReadEntity.getTimeout();
@@ -666,6 +667,7 @@ public class NpPosManager implements INpPosControler {
     @Override
     public void readCard(final CardReadEntity cardReadEntity) {
         try {
+            LogUtil.e("readCard");
             checkEmvParams();
            // byte transType = (byte)cardReadEntity.getTradeType();
             byte cardType = (byte)cardReadEntity.getReadCardType();
@@ -749,8 +751,8 @@ public class NpPosManager implements INpPosControler {
     }
 
     private void getMagCard(CardReadEntity cardReadEntity) throws SDKException {
-        SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
         System.out.println("*************swipeCardResponse**************");
+        SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
         System.out.println(swipeCardResponse.toString());
         if (swipeCardResponse != null) {
             if (mListener != null) {
@@ -1041,12 +1043,6 @@ public class NpPosManager implements INpPosControler {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
 
-                        //INICIO
-                        //Variables Adiconales: enrique.barbaran@kriptops.com
-                        String aid = dataMap.get("9F06");
-                        String track2Encript = dataMap.get("0xDF78");
-                        //FIN
-
                         Log.e("N98","track2 ="+encTrack2Data);
 
                         String pan = dataMap.get("5A");
@@ -1202,26 +1198,7 @@ public class NpPosManager implements INpPosControler {
 
                         //INICIO
                         //Variables Adiconales: enrique.barbaran@kriptops.com
-                        String tag9F06 = dataMap.get("9F06");
                         String tagDF78 = dataMap.get("DF78");
-                        //FIN
-
-                        //INICIO
-                        //Condicional para obtener data del track encriptado y el aid
-                        //Autor: Enrique.barbaran@kriptops.com
-
-                        /*
-                        if (tagDF78 != null) {
-                            packLen = TlvUtil.pack_tlv_data("DF78", tag9F26, ret);
-                            filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
-                        }
-
-                        if (tag9F06 != null) {
-                            packLen = TlvUtil.pack_tlv_data("9F06", tag9F26, ret);
-                            filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
-                        }
-                        */
-                        //FIN
 
 
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
@@ -1254,7 +1231,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
                         cardInfoEntity.setEncryptTrack2(tagDF78);
-                        cardInfoEntity.setAid(tag9F06);
+                        cardInfoEntity.setAid(tag84);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1303,12 +1280,6 @@ public class NpPosManager implements INpPosControler {
                     if (TextUtils.equals(executeResult, "00")) {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
-
-                        //INICIO
-                        //Variables Adiconales: enrique.barbaran@kriptops.com
-                        String aid = dataMap.get("9F06");
-                        String track2Encript = dataMap.get("0xDF78");
-                        //FIN
 
                         String pan = "";
                         String expireDT = "";
@@ -1460,24 +1431,7 @@ public class NpPosManager implements INpPosControler {
                         }
 
                         //INICIO
-                        //Condicional para obtener data del track encriptado y el aid
                         //Autor: Enrique.barbaran@kriptops.com
-                        /*
-                        if (tagDF78 != null) {
-                            packLen = TlvUtil.pack_tlv_data("DF78", tag9F26, ret);
-                            filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
-                        }
-
-                        if (tag9F06 != null) {
-                            packLen = TlvUtil.pack_tlv_data("9F06", tag9F26, ret);
-                            filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
-                        }
-                        */
-                        //FIN
-
-                        //INIT
-                        //Var: enrique.barbaran@kriptops.com
-                        String tag9F06 = dataMap.get("9F06");
                         String tagDF78 = dataMap.get("DF78");
                         //END
 
@@ -1511,7 +1465,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
                         cardInfoEntity.setEncryptTrack2(tagDF78);
-                        cardInfoEntity.setAid(tag9F06);
+                        cardInfoEntity.setAid(tag84);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                     }
                 } else {

@@ -139,6 +139,7 @@ public class TlvUtil {
         byte[] value = new byte[length];
         System.arraycopy(tlv, index, value, 0, length);
         index += length;
+        LogUtil.d("TAG: "+bcd2str(tag)+"; value: "+bcd2str(value));
         map.put(bcd2str(tag), bcd2str(value));
         return index;
     }
