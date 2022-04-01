@@ -1007,16 +1007,16 @@ public class NpPosManager implements INpPosControler {
         if (cardReadEntity.getTradeType() == TradeType.SALE) {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
-            map.put("9F1A","0840");//terminal country code
-            map.put("5F2A","0840");//transaction currency code
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code
             map.put("9F41","00000001");
             map.put("5C","9F119F129B50");
 
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
-            map.put("9F1A","0840");//terminal country code
-            map.put("5F2A","0840");//transaction currency code
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code
         }
         byte[] result = Command.executeStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {
@@ -1251,11 +1251,14 @@ public class NpPosManager implements INpPosControler {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
             map.put("9F03","000000000000");
-            map.put("5F2A","0860");
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code
             //map.put("5C","9F119F129B50");
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code
         }
         byte[] result = Command.executeQPBOCStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {

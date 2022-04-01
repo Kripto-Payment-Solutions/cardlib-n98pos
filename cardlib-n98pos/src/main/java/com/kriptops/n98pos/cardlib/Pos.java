@@ -46,6 +46,7 @@ import com.newpos.mposlib.util.ISOUtil;
 
 import java.lang.ref.WeakReference;
 import java.security.PrivateKey;
+import java.util.Currency;
 import java.util.List;
 
 import javax.crypto.Cipher;
@@ -701,7 +702,7 @@ public class Pos {
      * @param amount   monto en formato ex2, por ejemplo 1000 representa 10.00
      * @param cashback indica si es una reversa
      */
-    public void beginTransaction(String date, String time, String tsc, String amount, boolean cashback) {
+    public void beginTransaction(String date, String time, String tsc, String amount, String currency, boolean cashback) {
         /*
         emv.reset();
         data = new TransactionData();
@@ -724,6 +725,8 @@ public class Pos {
             //cardReadEntitys.setAmount(amount);
             //0x01 mag 0x02 icc  0x04 nfc
             cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            cardReadEntitys.setCurrency(currency);
+            cardReadEntitys.setTerminalCoutryCode("0604");
             //cardReadEntitys.setReadCardType(0x04);
             //cardReadEntitys.setReadCardType(0x01 | 0x02 );
             cardReadEntitys.setTradeType(0);
@@ -744,8 +747,8 @@ public class Pos {
      * @param tsc    contador de transaccion
      * @param amount monto en formato ex2, por ejemplo 1000 representa 10.00
      */
-    public void beginTransaction(String date, String time, String tsc, String amount) {
-        this.beginTransaction(date, time, tsc, amount, false);
+    public void beginTransaction(String date, String time, String tsc, String amount, String currency) {
+        this.beginTransaction(date, time, tsc, amount, currency, false);
     }
 
     public void cancelTransaction(){

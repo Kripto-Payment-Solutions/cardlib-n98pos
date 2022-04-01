@@ -406,7 +406,8 @@ public class MainActivity extends AppCompatActivity{
                 "210820", // fecha en formato
                 "030800",
                 "00000001",
-                "000000080000"
+                "000000080000",
+                "0604"
                 //,false //agregar para hacer el cashback
         );
     }
