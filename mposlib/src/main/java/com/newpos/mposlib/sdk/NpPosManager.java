@@ -993,6 +993,7 @@ public class NpPosManager implements INpPosControler {
             cardInfoEntity.setExpDate(expireDT);
             cardInfoEntity.setCsn(cardSeq);
             cardInfoEntity.setIc55Data(filed55.toString());
+            cardInfoEntity.setDataMap(dataMap);
             mListener.onGetReadCardInfo(cardInfoEntity);
             return;
         }
@@ -1230,9 +1231,9 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
+                        cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
-                        cardInfoEntity.setDataMap(dataMap);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1468,6 +1469,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
+                        cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
                         mListener.onGetReadCardInfo(cardInfoEntity);
