@@ -1232,6 +1232,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setIc55Data(filed55.toString());
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
+                        cardInfoEntity.setDataMap(dataMap);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }

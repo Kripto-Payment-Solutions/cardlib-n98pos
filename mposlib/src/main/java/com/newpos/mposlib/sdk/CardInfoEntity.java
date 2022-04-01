@@ -2,6 +2,8 @@ package com.newpos.mposlib.sdk;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CardInfoEntity {
 
@@ -26,6 +28,7 @@ public class CardInfoEntity {
     private String captureType;
     private String aid;
     private String encryptTrack2;
+    private Map<String, String> dataMap = new HashMap<>();
 
     public CardInfoEntity() {
     }
@@ -209,5 +212,13 @@ public class CardInfoEntity {
             }
         }
         return sb.toString();
+    }
+
+    public void setDataMap(Map<String, String> dataMap) {
+        this.dataMap = dataMap;
+    }
+
+    public Map<String, String> getDataMap() {
+        return dataMap;
     }
 }
