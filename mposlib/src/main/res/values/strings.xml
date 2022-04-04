@@ -31,6 +31,8 @@
     <string name="delete_all_rid_error_desc">Delete public key parameter error</string>
     <string name="not_open_file">File not found or failed to open</string>
     <string name="enter_update_fail">Failed to enter upgrade mode</string>
+    <string name="setup_N98_date_time_fail">setup system date and time failed</string>
+    <string name="get_N98_date_time_fail">get system date and time failed</string>
     <!--SDKException-->
     <string name="success">Failed to enter success mode</string>
     <string name="err_code_cmd_nonsupport">Command code is not supported</string>

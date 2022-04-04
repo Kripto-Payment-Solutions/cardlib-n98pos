@@ -136,4 +136,16 @@ public class NpSwipe implements INpSwipeListener {
     public void onReceiveErrorCode(int error, String message) {
 
     }
+
+    /**
+     * 数据加密回调
+     * **/
+    @Override
+    public void onGetEncryptData(String eData){};
+
+    /**
+     * 显示信息
+     * **/
+    @Override
+    public void onDispMsgOnScreen(String disp){};
 }

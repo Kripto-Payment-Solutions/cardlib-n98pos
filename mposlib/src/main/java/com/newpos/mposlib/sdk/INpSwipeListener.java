@@ -141,4 +141,14 @@ public interface INpSwipeListener {
      * @param message
      */
     void onReceiveErrorCode(int error, String message);
+
+    /**
+     * 数据加密回调
+     * **/
+    void onGetEncryptData(String eData);
+
+    /**
+     * 显示信息
+     * **/
+    void onDispMsgOnScreen(String disp);
 }

@@ -147,4 +147,19 @@ public interface INpPosControler {
      * @param content      显示的文本
      */
     void displayTextOnScreen(int keepShowTime, String content);
+
+    /**
+     *  encrypt or decrypt data
+     * **/
+    void EncryptData(String encData);
+
+    /**
+     * setup N98 system date and time
+     * **/
+    void setupSystemDate(String datetime);
+
+    /**
+     * get N98 system date and time
+     * **/
+    void getSystemDate();
 }

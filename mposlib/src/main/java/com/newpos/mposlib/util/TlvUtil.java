@@ -104,7 +104,7 @@ public class TlvUtil {
 
     public static Map<String, String> tlvToMap(byte[] tlv) {
         if (tlv == null) {
-            throw new RuntimeException("tlv数据不能为null"); //los datos tlv no pueden ser nulos
+            throw new RuntimeException("tlv数据不能为null");
         }
         Map<String, String> map = new HashMap();
         int index = 0;

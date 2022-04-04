@@ -224,6 +224,18 @@ public class BluetoothApp implements INpSwipeListener {
         });
     }
 
+    /**
+     * 数据加密回调
+     * **/
+    @Override
+    public void onGetEncryptData(String eData){};
+
+    /**
+     * 显示信息
+     * **/
+    @Override
+    public void onDispMsgOnScreen(String disp){};
+
     protected static class ClientMessengerHandler extends Handler{
 
         private WeakReference<BluetoothApp> mActivity;

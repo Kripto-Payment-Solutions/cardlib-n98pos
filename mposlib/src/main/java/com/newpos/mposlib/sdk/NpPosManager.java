@@ -588,10 +588,8 @@ public class NpPosManager implements INpPosControler {
                     mContext.getString(R.string.device_get_battery_error_desc));
         }
     }
-
     public void readCard_UPTS(final CardReadEntity cardReadEntity) {
         try {
-            LogUtil.e("readCard_UPTS");
    //         checkEmvParams();
             byte type = 7;
             byte tmo = (byte) cardReadEntity.getTimeout();
@@ -663,11 +661,9 @@ public class NpPosManager implements INpPosControler {
         }
 
     }
-
     @Override
     public void readCard(final CardReadEntity cardReadEntity) {
         try {
-            LogUtil.e("readCard");
             checkEmvParams();
            // byte transType = (byte)cardReadEntity.getTradeType();
             byte cardType = (byte)cardReadEntity.getReadCardType();
@@ -742,6 +738,7 @@ public class NpPosManager implements INpPosControler {
                 onError(ERRORS.DEVICE_READ_CARD_ERROR, mContext.getString(R.string.device_read_card_fail));
             }
         }
+
     }
 
     final static class CardType {
@@ -751,23 +748,10 @@ public class NpPosManager implements INpPosControler {
     }
 
     private void getMagCard(CardReadEntity cardReadEntity) throws SDKException {
-        System.out.println("*************swipeCardResponse**************");
         SwipeCardResponse swipeCardResponse = Command.readTrackDataWithUnencrypted((byte) 1);
-        System.out.println(swipeCardResponse.toString());
         if (swipeCardResponse != null) {
             if (mListener != null) {
                 CardInfoEntity cardInfoEntity = new CardInfoEntity();
-/*                try {
-                    //String pan = swipeCardResponse.getPan();
-                    //String random = pan.substring(pan.length() - 6, pan.length());
-                    //DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
-                    //cardInfoEntity.setTusn(deviceSN.getTusn());
-                    //cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
-                    //cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
-                    //cardInfoEntity.setKsn(random);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }*/
                 cardInfoEntity.setCardType(CardType.MAG_CARD);
                 Log.e("N98","service code ="+swipeCardResponse.getTrack2Servicecode());
                 if (TextUtils.isEmpty(swipeCardResponse.getEncryptedTrack2Data())) {
@@ -777,15 +761,18 @@ public class NpPosManager implements INpPosControler {
                     cardInfoEntity.setTrack3(swipeCardResponse.getThreeTrack());
                 } else {
                     cardInfoEntity.setTrack1(swipeCardResponse.getEncryptedTrack1Data());
-                    cardInfoEntity.setTrack2(swipeCardResponse.getEncryptedTrack2Data());
+                    cardInfoEntity.setTrack2(swipeCardResponse.getTwoTrack());
                     cardInfoEntity.setTrack3(swipeCardResponse.getEncryptedTrack3Data());
+                    cardInfoEntity.setEncryptTrack2(swipeCardResponse.getEncryptedTrack2Data());
                 }
                 cardInfoEntity.setCardNumber(swipeCardResponse.getPan());
                 cardInfoEntity.setMaskedPan(swipeCardResponse.getPan());
                 cardInfoEntity.setCaptureType("msr");
                 cardInfoEntity.setExpDate(swipeCardResponse.getExpiryDate());
                 cardInfoEntity.setCsn(swipeCardResponse.getCarSeq());
+                cardInfoEntity.setPanSequenceNumber(swipeCardResponse.getCarSeq());
                 cardInfoEntity.setIc55Data(swipeCardResponse.getIcParams());
+                cardInfoEntity.setEncryptTrack2(swipeCardResponse.getEncryptedTrack2Data());
 
                 mListener.onGetReadCardInfo(cardInfoEntity);
             }
@@ -796,10 +783,11 @@ public class NpPosManager implements INpPosControler {
 
     final class TradeType {
         public final static int SALE = 0;
-        public final static int GET_CARD_NUMBER = 1;
+        public final static int VOID = 1;
+        public final static int GET_CARD_NUMBER = 2;
     }
-
-    private void processEMVtag(byte[] result) {
+    private void processEMVtag( byte[] result )
+    {
         LogUtil.e("test readcard ="+ISOUtil.byte2hex(result));
         Map<String, String> dataMap = TlvUtil.tlvToMap(result);
         String executeResult = (String) dataMap.get("DF75");
@@ -993,11 +981,11 @@ public class NpPosManager implements INpPosControler {
             cardInfoEntity.setExpDate(expireDT);
             cardInfoEntity.setCsn(cardSeq);
             cardInfoEntity.setIc55Data(filed55.toString());
+            cardInfoEntity.setDataMap(dataMap);
             mListener.onGetReadCardInfo(cardInfoEntity);
             return;
         }
     }
-
     private void getIcCard(final CardReadEntity cardReadEntity) throws SDKException {
         if (mListener != null) {
             mListener.onDetachedIC();
@@ -1007,21 +995,22 @@ public class NpPosManager implements INpPosControler {
         if (cardReadEntity.getTradeType() == TradeType.SALE) {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
-            map.put("9F1A","0840");//terminal country code
-            map.put("5F2A","0840");//transaction currency code
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code //Default Prov. 0840
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code    //Default Prov 0840
             map.put("9F41","00000001");
             map.put("5C","9F119F129B50");
 
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
-            map.put("9F1A","0840");//terminal country code
-            map.put("5F2A","0840");//transaction currency code
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code //Default Prov. 0840
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code    //Default Prov 0840
         }
         byte[] result = Command.executeStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {
             if (cardReadEntity.getTradeType() == TradeType.GET_CARD_NUMBER) {
                 String pan = TlvUtil.tlvToMap(result).get("5A");
+                String aid = TlvUtil.tlvToMap(result).get("9F06");
                 if (pan != null) {
                     pan = pan.replace("F", "");
                     if (mListener != null) {
@@ -1029,7 +1018,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setCardType(CardType.IC_CARD);
                         cardInfoEntity.setCardNumber(pan);
                         cardInfoEntity.setMaskedPan(pan);
-                        //cardInfoEntity.setPanSequenceNumber(card);
+                        cardInfoEntity.setAid(aid);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1037,14 +1026,13 @@ public class NpPosManager implements INpPosControler {
                 throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
             } else {
                 if (mListener != null) {
+                    LogUtil.d("field55: "+StringUtil.byte2HexStr(result));
                     Map<String, String> dataMap = TlvUtil.tlvToMap(result);
                     String executeResult = (String) dataMap.get("DF75");
                     if (TextUtils.equals(executeResult, "00")) {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
-
                         Log.e("N98","track2 ="+encTrack2Data);
-
                         String pan = dataMap.get("5A");
                         if (pan != null) {
                             pan = pan.replace("F", "");
@@ -1196,14 +1184,11 @@ public class NpPosManager implements INpPosControler {
                             filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
                         }
 
-                        //INICIO
-                        //Variables Adiconales: enrique.barbaran@kriptops.com
                         String tagDF78 = dataMap.get("DF78");
-
 
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
-                            String random = pan.substring(pan.length() - 6, pan.length());
+                            String random = pan.substring(pan.length() - 8, pan.length());
                             DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
                             cardInfoEntity.setTusn(deviceSN.getTusn());
                             cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
@@ -1230,6 +1215,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
+                        cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
                         mListener.onGetReadCardInfo(cardInfoEntity);
@@ -1251,22 +1237,27 @@ public class NpPosManager implements INpPosControler {
             map.put("9C", "00");
             map.put("9F02", cardReadEntity.getAmount());
             map.put("9F03","000000000000");
-            map.put("5F2A","0860");
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code //Default Prov. 0840
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code    //Default Prov 0840
             //map.put("5C","9F119F129B50");
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
+            map.put("9F1A",cardReadEntity.getTerminalCoutryCode());//terminal country code //Default Prov. 0840
+            map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code    //Default Prov 0840
         }
         byte[] result = Command.executeQPBOCStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {
             if (cardReadEntity.getTradeType() == TradeType.GET_CARD_NUMBER) {
                 String pan = TlvUtil.tlvToMap(result).get("5A");
+                String aid = TlvUtil.tlvToMap(result).get("9F06");
                 if (pan != null) {
                     pan = pan.replace("F", "");
                     if (mListener != null) {
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         cardInfoEntity.setCardType(CardType.RF_CARD);
                         cardInfoEntity.setCardNumber(pan);
+                        cardInfoEntity.setAid(aid);
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1280,7 +1271,6 @@ public class NpPosManager implements INpPosControler {
                     if (TextUtils.equals(executeResult, "00")) {
                         String unEncTrack2Data = dataMap.get("57");
                         String encTrack2Data = dataMap.get("DF81");
-
                         String pan = "";
                         String expireDT = "";
                         if (unEncTrack2Data != null) {
@@ -1430,14 +1420,9 @@ public class NpPosManager implements INpPosControler {
                             filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
                         }
 
-                        //INICIO
-                        //Autor: Enrique.barbaran@kriptops.com
-                        String tagDF78 = dataMap.get("DF78");
-                        //END
-
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
-                            String random = pan.substring(pan.length() - 6);
+                            String random = pan.substring(pan.length() - 8);
                             DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
                             cardInfoEntity.setTusn(deviceSN.getTusn());
                             cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
@@ -1446,6 +1431,7 @@ public class NpPosManager implements INpPosControler {
                         } catch (Throwable e) {
                             e.printStackTrace();
                         }
+                        String tagDF78 = dataMap.get("DF78");
 
                         cardInfoEntity.setCardType(CardType.RF_CARD);
                         if (TextUtils.isEmpty(encTrack2Data)) {
@@ -1464,6 +1450,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setExpDate(expireDT);
                         cardInfoEntity.setCsn(cardSeq);
                         cardInfoEntity.setIc55Data(filed55.toString());
+                        cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
                         mListener.onGetReadCardInfo(cardInfoEntity);
@@ -1889,6 +1876,86 @@ public class NpPosManager implements INpPosControler {
         }
     }
 
+    @Override
+    public void EncryptData(String encData) {
+        try {
+            byte keyIndex = KeyType.TRACK;
+            byte keyType = 0;
+
+            byte[] data = StringUtil.str2BCD(encData);
+            LogUtil.d("d:" + StringUtil.byte2HexStr(data));
+            String result = Command.getDataDES(keyIndex, keyType, data);
+
+            if (result != null) {
+                if (mListener != null) {
+                    mListener.onGetEncryptData(result);
+                }
+            } else {
+                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+                        mContext.getString(R.string.device_calc_mac_error_desc));
+            }
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+            //                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+//                        ERRORS.DEVICE_CALC_MAC_ERROR_DESC);
+            onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+                    mContext.getString(R.string.device_calc_mac_error_desc));
+        }
+    }
+
+    @Override
+    public void setupSystemDate(String datetime) {
+        try {
+
+            byte[] result = null;
+            byte[] data = datetime.getBytes();
+            LogUtil.d("d:" + StringUtil.byte2HexStr(data));
+             Command.setupPosDate(data);
+
+            if (result != null) {
+                if (mListener != null) {
+                    mListener.onSetTransactionInfoSuccess();
+                }
+            } else {
+                onError(ERRORS.SETUP_DATE_TIME_ERROR,
+                        mContext.getString(R.string.setup_N98_date_time_fail));
+            }
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+            onError(ERRORS.SETUP_DATE_TIME_ERROR,
+                    mContext.getString(R.string.setup_N98_date_time_fail));
+        }
+    }
+
+    @Override
+    public void getSystemDate() {
+        try {
+            byte[] result = null;
+            result = Command.getPosDate();
+
+            LogUtil.d("date and time: "+StringUtil.bytes2Ascii(result));
+
+            if (result != null) {
+                if (mListener != null) {
+                    mListener.onDispMsgOnScreen(StringUtil.bytes2Ascii(result));
+                }
+            } else {
+                onError(ERRORS.GET_DATE_TIME_ERROR,
+                        mContext.getString(R.string.get_N98_date_time_fail));
+            }
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+            onError(ERRORS.GET_DATE_TIME_ERROR,
+                    mContext.getString(R.string.get_N98_date_time_fail));
+        }
+    }
+
     private void onError(int error, String desc) {
         try {
             if (mListener != null) {
@@ -1990,4 +2057,5 @@ public class NpPosManager implements INpPosControler {
             }
         }
     }
+
 }

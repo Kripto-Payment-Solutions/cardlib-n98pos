@@ -9,6 +9,7 @@ public class ResponsePos<T> {
     private String inputInfo;
     private String encryMacData;
     private String transactionInfo;
+    private String encryptData;
 
     private T objResp;
 
@@ -21,6 +22,7 @@ public class ResponsePos<T> {
         this.cardNum = "";
         this.encryMacData = "";
         this.transactionInfo = "";
+        this.encryptData = "";
     }
 
     public String getCode() {
@@ -93,5 +95,13 @@ public class ResponsePos<T> {
 
     public void setTransactionInfo(String transactionInfo) {
         this.transactionInfo = transactionInfo;
+    }
+
+    public String getEncryptData() {
+        return encryptData;
+    }
+
+    public void setEncryptData(String encryptData) {
+        this.encryptData = encryptData;
     }
 }

@@ -86,6 +86,28 @@
                 android:visibility="visible"
                 tools:visibility="visible" />
 
+            <EditText
+                android:id="@+id/txt_track2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="@string/hex_digits"
+                android:ems="10"
+                android:hint="@string/txt_track2"
+                android:inputType="number"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
+            <EditText
+                android:id="@+id/txt_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:digits="@string/hex_time"
+                android:ems="10"
+                android:hint="@string/txt_time"
+                android:inputType="number"
+                android:visibility="visible"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -147,6 +169,31 @@
                     android:layout_marginLeft="8dp"
                     android:onClick="btn_load_param"
                     android:text="@string/btn_load_param" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                tools:visibility="visible">
+
+                <Button
+                    android:id="@+id/btn_encrypt_data"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_encrypt_data"
+                    android:text="@string/btn_encrypt_data" />
+
+                <Button
+                    android:id="@+id/btn_set_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_set_time"
+                    android:text="@string/btn_encrypt_data" />
 
             </LinearLayout>
 

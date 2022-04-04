@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity{
     private EditText macKey;
     private EditText plainText;
     private EditText encriptedText;
+    private EditText track2;
     private EditText inputAmount;
     private EditText pan;
     private TextView log;
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity{
         this.plainText = this.findViewById(R.id.txt_texto_plano);
         this.encriptedText = this.findViewById(R.id.txt_texto_cifrado_hex);
         this.log = this.findViewById(R.id.txt_log);
+        this.track2 = this.findViewById(R.id.txt_track2);
 
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
@@ -316,6 +318,11 @@ public class MainActivity extends AppCompatActivity{
         getPos().withPinpad(this::encrypt);
     }
 
+    public void btn_encrypt_data(View btn){
+        String track2 = this.track2.getText().toString();
+        getPos().getPosManager().EncryptData(track2);
+    }
+
     public void encrypt(Pinpad pinpad) {
         String plainText = this.plainText.getText().toString();
         String plainHex = Util.toHexString(plainText.getBytes(), true);
@@ -327,6 +334,10 @@ public class MainActivity extends AppCompatActivity{
     public void btn_imprimir_ticket(View btn) {
         // Log.d(Defaults.LOG_TAG, "Imprimir Ticket");
         getPos().withPrinter(this::print);
+    }
+
+    public void btn_set_time(View btn){
+        getPos().getPosManager().setupSystemDate("20220404 14:00:00");
     }
 
     public void print(Printer printer) {
@@ -403,10 +414,11 @@ public class MainActivity extends AppCompatActivity{
 //        getPos().setGoOnline(this::online);
 //        getPos().setOnSuccess(this::onSuccess);
         getPos().beginTransaction( // ete metodo se llama en cada transaccion
-                "210820", // fecha en formato
+                "220401", // fecha en formato
                 "030800",
                 "00000001",
-                "000000080000"
+                "000000080000",
+                "0604"
                 //,false //agregar para hacer el cashback
         );
     }
@@ -428,7 +440,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     private void onSuccess(String source, ResponsePos responsePos) {
-    //private void onSuccess(String source, String code) {
+        //private void onSuccess(String source, String code) {
         // Log.d(Defaults.LOG_TAG, "Controlar el error de lectura de datos");
         this.runOnUiThread(() -> {
 
@@ -537,6 +549,7 @@ public class MainActivity extends AppCompatActivity{
                             log.setText(cardInfoEntity.getCardNumber());
                             pan.setText(cardInfoEntity.getCardNumber());
                             log.setText(cardInfoEntity.toString());
+                            track2.setText(cardInfoEntity.getTrack2());
                         }
                     });
                     break;
@@ -567,6 +580,20 @@ public class MainActivity extends AppCompatActivity{
                         }
                     });
 
+                    break;
+
+                case "onGetEncryptData":
+                    this.track2.setText(responsePos.getEncryptData());
+                    break;
+
+                case "onSetTransactionInfoSuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onSetTransactionInfoSuccess",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     break;
             }
         });

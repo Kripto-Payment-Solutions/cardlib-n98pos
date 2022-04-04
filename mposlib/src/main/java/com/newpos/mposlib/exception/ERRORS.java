@@ -68,6 +68,12 @@ public class ERRORS {
     public static final int DELETE_ALL_RID_ERROR = 25;
     public static final String DELETE_ALL_RID_ERROR_DESC = "删除公钥参数错误";
 
+    public static final int SETUP_DATE_TIME_ERROR =26;
+    public static final String SETUP_DATA_TIME_ERROR_DESC = "设置终端时间失败";
+
+    public static final int GET_DATE_TIME_ERROR =27;
+    public static final String GET_DATE_TIME_ERROR_DESC ="获取终端时间失败";
+
     public static final String SDK_AID_FORMAT_ERROR_DESC = "AID内容错误";
     public static final String SDK_MASTER_KEY_FORMAT_ERROR_DESC = "主密钥格式错误";
     public static final String SDK_OPER_CANCEL_DESC = "操作取消";

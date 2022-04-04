@@ -356,4 +356,16 @@ public class BluetoothActivity extends BaseActivity implements AdapterView.OnIte
     public void onReceiveErrorCode(int i, String s) {
 
     }
+
+    /**
+     * 数据加密回调
+     * **/
+    @Override
+    public void onGetEncryptData(String eData){};
+
+    /**
+     * 显示信息
+     * **/
+    @Override
+    public void onDispMsgOnScreen(String disp){};
 }

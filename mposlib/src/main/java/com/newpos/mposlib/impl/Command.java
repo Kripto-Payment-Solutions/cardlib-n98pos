@@ -1,7 +1,8 @@
 package com.newpos.mposlib.impl;
 
-//import android.util.Log;
-//import com.newpos.mposlib.BuildConfig;
+import android.util.Log;
+
+import com.newpos.mposlib.BuildConfig;
 import com.newpos.mposlib.api.CommandCallback;
 import com.newpos.mposlib.bluetooth.BluetoothService;
 import com.newpos.mposlib.exception.SDKException;
@@ -24,6 +25,7 @@ import com.newpos.mposlib.util.TimeUtils;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -1153,6 +1155,7 @@ public class Command {
 
         byte[] params = new byte[(cardPad.length + 2)];
         byte[] qrcodeDecLen = lenToLLVAR(cardPad.length);
+
         int pos = 0;
         System.arraycopy(qrcodeDecLen, 0, params, pos, qrcodeDecLen.length);
         pos += qrcodeDecLen.length;
@@ -1183,18 +1186,22 @@ public class Command {
                     System.arraycopy(result, pos, tusn, 0, tusnLen);
                     pos += tusnLen;
                     data.setTusn(StringUtil.byteToStr(tusn));
+                    LogUtil.d("tusn: "+data.getTusn());
                 }
 
                 int encryptTusnLen = llvarToLen(result[pos++], result[pos++]);
+                LogUtil.d("tusnlen: "+encryptTusnLen);
                 if (encryptTusnLen > 0) {
                     byte[] encryptTusn = new byte[encryptTusnLen];
                     System.arraycopy(result, pos, encryptTusn, 0, encryptTusnLen);
                     pos += encryptTusnLen;
                     data.setEncryptTusn(StringUtil.byte2HexStr(encryptTusn));
+                    LogUtil.d("encrypt tusn: "+data.getEncryptTusn());
                 }
 
                 byte deviceType = result[pos++];
                 data.setDeviceType(String.format("%02d", deviceType));
+                LogUtil.d("device type: "+data.getDeviceType());
 //                byte[] random = new byte[8];
 //                System.arraycopy(result, pos, random, 0, random.length);
                 return data;
@@ -1277,10 +1284,18 @@ public class Command {
                         case 5:
                             System.arraycopy(result, pos, tempData, 0, iLen);
                             pos += iLen;
+                            String encryptTrack2 = StringUtil.bytesToHexString(tempData);
+                            LogUtil.e("encrypt track2 ="+encryptTrack2);
+                            if(encryptTrack2.substring(0,4).equals("DF78")){
+                                data.setEncryptedTrack2Data(encryptTrack2.substring(6));
+                            }
+                            break;
+                        case 6:
+                            System.arraycopy(result, pos, tempData, 0, iLen);
+                            pos += iLen;
                             String servicecode = StringUtil.byteToStr(tempData);
                             data.setTrack2Servicecode(servicecode);
                             break;
-                        case 6:
                         case 7:
                         case 8:
                         default:
@@ -1476,7 +1491,7 @@ public class Command {
                 byte[] result = responseData.getPacket().getParams();
                 int len = llvarToLen(result[0], result[1]);
                 byte[] respTLV =  new byte[len];
-                System.arraycopy(result, 2, respTLV, 0, respTLV.length);
+                System.arraycopy(result, 2, respTLV, 0, len);
                 return respTLV;
             } else {
                 throw new SDKException(responseData.getRespCode());
@@ -1549,7 +1564,6 @@ public class Command {
             throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
         }
     }
-
     public static String inputAmount(byte tmo, byte[] displayData) throws SDKException {
         byte[] params = new byte[(displayData.length + 3)];
         int pos = 0;
@@ -1713,7 +1727,8 @@ public class Command {
 //                byte[] ksn = new byte[10];
 //                System.arraycopy(result, mac.length + 1, ksn, 0, ksn.length);
                 CalMacResponse calMacRespond = new CalMacResponse();
-                calMacRespond.setMAC(new String(mac));
+                calMacRespond.setMAC(StringUtil.byte2HexStr(mac));
+                //calMacRespond.setMAC(new String(mac));
                 //calMacRespond.setKSN(StringUtil.byte2HexStr(ksn));
                 return calMacRespond;
             } else {
@@ -1761,7 +1776,7 @@ public class Command {
         }
     }
 
-    public static String getDataDES(byte index, byte encType, byte mode, byte[] data, byte[] checkValue) throws SDKException {
+    public static String getDataDES(byte index, byte encType, byte[] data) throws SDKException {
         if (data == null) {
             throw new SDKException(SDKException.ERR_CODE_PARAM_ERROR);
         }
@@ -1769,7 +1784,6 @@ public class Command {
         int pos = 0;
         params[pos++] = index;
         params[pos++] = encType;
-        params[pos++] = mode;
         byte[] dataLen = lenToLLVAR(data.length);
         params[pos++] = dataLen[0];
         params[pos++] = dataLen[1];
@@ -1791,9 +1805,13 @@ public class Command {
         if (responseData != null) {
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
                 byte[] result = responseData.getPacket().getParams();
-                if (result != null && result[0] == (byte)0) {
-                    byte[] enc = new byte[llvarToLen(result[1], result[2])];
-                    System.arraycopy(result, 3, enc, 0, enc.length);
+                LogUtil.d("result: "+ISOUtil.byte2hex(result));
+                if (result != null) {
+                    int len = ISOUtil.bcd2int(result,0,2);
+                    byte[] enc = new byte[len];
+                    //byte[] enc = new byte[llvarToLen(result[1], result[2])];
+                    //System.arraycopy(result, 3, enc, 0, enc.length);
+                    System.arraycopy(result, 2, enc, 0, enc.length);
                     return StringUtil.byte2HexStr(enc);
                 }
                 throw new SDKException(String.valueOf(result[0]));
@@ -2090,6 +2108,56 @@ public class Command {
         if (responseData != null) {
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
                 return responseData.getPacket().getParams()[0];
+            } else {
+                throw new SDKException(responseData.getRespCode());
+            }
+        } else {
+            throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
+        }
+    }
+
+    public static byte setupPosDate(byte[] datetime) throws SDKException {
+        Packet packet = new Packet();
+        packet.setCommand(new byte[] {(byte)0X1D, 0X04});
+        packet.setParams(datetime);
+
+        Future<ResponseData> future = packCommandWithResponse(packet, TimeUtils.TIME_NORMAL);
+        ResponseData responseData = null;
+        try {
+            responseData = future.get();
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+        }
+
+        if (responseData != null) {
+            if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
+                return responseData.getPacket().getParams()[0];
+            } else {
+                throw new SDKException(responseData.getRespCode());
+            }
+        } else {
+            throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
+        }
+    }
+    public static byte[] getPosDate() throws SDKException {
+        Packet packet = new Packet();
+        packet.setCommand(new byte[] {(byte)0X1D, 0X05});
+
+        Future<ResponseData> future = packCommandWithResponse(packet, TimeUtils.TIME_NORMAL);
+        ResponseData responseData = null;
+        try {
+            responseData = future.get();
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+        }
+
+        if (responseData != null) {
+            if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
+                return responseData.getPacket().getParams();
             } else {
                 throw new SDKException(responseData.getRespCode());
             }
