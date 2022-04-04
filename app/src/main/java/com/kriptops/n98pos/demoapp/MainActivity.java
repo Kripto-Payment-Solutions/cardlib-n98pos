@@ -54,6 +54,11 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.crypto.BadPaddingException;
@@ -73,6 +78,7 @@ public class MainActivity extends AppCompatActivity{
     private EditText track2;
     private EditText inputAmount;
     private EditText pan;
+    private EditText dateTime;
     private TextView log;
 
     private String KEK = "";
@@ -120,6 +126,7 @@ public class MainActivity extends AppCompatActivity{
         this.encriptedText = this.findViewById(R.id.txt_texto_cifrado_hex);
         this.log = this.findViewById(R.id.txt_log);
         this.track2 = this.findViewById(R.id.txt_track2);
+        this.dateTime = this.findViewById(R.id.txt_time);
 
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
@@ -130,6 +137,9 @@ public class MainActivity extends AppCompatActivity{
 
         this.pan = this.findViewById(R.id.txt_pan);
         this.pan.setText("4779042200107095");
+
+        String currentDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        this.dateTime.setText(currentDate);
     }
 
     @Override
@@ -337,7 +347,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_set_time(View btn){
-        getPos().getPosManager().setupSystemDate("20220404 14:00:00");
+        getPos().getPosManager().setupSystemDate(this.dateTime.getText().toString());
     }
 
     public void print(Printer printer) {

@@ -193,7 +193,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
                     android:onClick="btn_set_time"
-                    android:text="@string/btn_encrypt_data" />
+                    android:text="@string/btn_set_time" />
 
             </LinearLayout>
 
