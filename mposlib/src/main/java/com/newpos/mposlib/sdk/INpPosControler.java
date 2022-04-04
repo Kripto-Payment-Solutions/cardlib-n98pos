@@ -153,6 +153,10 @@ public interface INpPosControler {
      * **/
     void EncryptData(String encData);
 
+    String EncryptDataCBC(String encData);
+
+    String EncryptDataECB(String encData);
+
     /**
      * setup N98 system date and time
      * **/

@@ -1906,6 +1906,71 @@ public class NpPosManager implements INpPosControler {
     }
 
     @Override
+    public String EncryptDataCBC(String encData) {
+        try {
+            byte keyIndex = KeyType.TRACK;
+            byte keyType = 0;
+
+            byte[] data = StringUtil.str2BCD(encData);
+            LogUtil.d("d:" + StringUtil.byte2HexStr(data));
+            String result = Command.getDataDES(keyIndex, keyType, data);
+
+            if (result != null) {
+                if (mListener != null) {
+                    return result;
+                }
+            } else {
+                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+                        mContext.getString(R.string.device_calc_mac_error_desc));
+            }
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+            //                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+//                        ERRORS.DEVICE_CALC_MAC_ERROR_DESC);
+            onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+                    mContext.getString(R.string.device_calc_mac_error_desc));
+        }
+        return null;
+    }
+
+    @Override
+    public String EncryptDataECB(String encData) {
+        try {
+            byte keyIndex = KeyType.TRACK;
+            byte keyType = 0;
+
+            encData = PaddingMode.PKCS5.pad(FitMode.F_FIT.fit(encData));
+            int low = 0;
+            String encrypted = "";
+
+            while (low < encData.length()) {
+                encrypted += encipherOcectECB(keyIndex, keyType, encData.substring(low, low + 8));
+                low += 8;
+            }
+
+            return encrypted;
+
+        } catch (Throwable e) {
+            if (LogUtil.DEBUG) {
+                e.printStackTrace();
+            }
+            //                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+//                        ERRORS.DEVICE_CALC_MAC_ERROR_DESC);
+            onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+                    mContext.getString(R.string.device_calc_mac_error_desc));
+        }
+        return null;
+    }
+
+    private String encipherOcectECB(byte keyIndex, byte keyType, String octect) throws SDKException{
+        byte[] data = StringUtil.str2BCD(octect);
+        String result = Command.getDataDES(keyIndex, keyType, data);
+        return result.substring(0,8);
+    }
+
+    @Override
     public void setupSystemDate(String datetime) {
         try {
 

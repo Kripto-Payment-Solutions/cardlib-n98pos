@@ -1,8 +1,5 @@
 package com.newpos.mposlib.impl;
 
-import android.util.Log;
-
-import com.newpos.mposlib.BuildConfig;
 import com.newpos.mposlib.api.CommandCallback;
 import com.newpos.mposlib.bluetooth.BluetoothService;
 import com.newpos.mposlib.exception.SDKException;
