@@ -330,8 +330,13 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_encrypt_data(View btn){
+//        String track2 = this.track2.getText().toString();
+//        getPos().getPosManager().EncryptData(track2);
+
         String track2 = this.track2.getText().toString();
-        getPos().getPosManager().EncryptData(track2);
+        String inCBC = getPos().getPosManager().EncryptDataCBC(track2);
+        String inECB = getPos().getPosManager().EncryptDataECB(track2);
+        this.track2.setText("CBC: " + inCBC + "\nECB: " + inECB);
     }
 
     public void encrypt(Pinpad pinpad) {
@@ -350,7 +355,7 @@ public class MainActivity extends AppCompatActivity{
     public void btn_set_time(View btn){
         String dateNow = this.dateTime.getText().toString();
         LogUtil.d("DateNow for Device", dateNow);
-        getPos().getPosManager().setupSystemDate(dateNow);
+        getPos().getPosManager().setupSystemDate("20220405000000"); // testeamos asi igaul genera error
     }
 
     public void print(Printer printer) {
