@@ -138,7 +138,8 @@ public class MainActivity extends AppCompatActivity{
         this.pan = this.findViewById(R.id.txt_pan);
         this.pan.setText("4779042200107095");
 
-        String currentDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        //String currentDate = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.getDefault()).format(new Date());
+        String currentDate = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(new Date());
         this.dateTime.setText(currentDate);
     }
 
@@ -347,7 +348,9 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_set_time(View btn){
-        getPos().getPosManager().setupSystemDate(this.dateTime.getText().toString());
+        String dateNow = this.dateTime.getText().toString();
+        LogUtil.d("DateNow for Device", dateNow);
+        getPos().getPosManager().setupSystemDate(dateNow);
     }
 
     public void print(Printer printer) {

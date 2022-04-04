@@ -21,7 +21,7 @@
     <string name="btn_imprimir">Imprimir</string>
     <string name="btn_cifrar">Cifrar</string>
     <string name="hex_digits">0123456789ABCDEF</string>
-    <string name="hex_time">0123456789:</string>
+    <string name="hex_time">0123456789:-/</string>
     <string name="digits">0123456789</string>
     <string name="connect">Connect</string>
     <string name="cancel">Cancel</string>

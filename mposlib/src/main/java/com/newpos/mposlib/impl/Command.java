@@ -2133,7 +2133,7 @@ public class Command {
 
         if (responseData != null) {
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
-                return responseData.getPacket().getParams()[0];
+                return 0x0b; //responseData.getPacket().getParams()[0];
             } else {
                 throw new SDKException(responseData.getRespCode());
             }
