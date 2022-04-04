@@ -424,6 +424,57 @@ public class Defaults {
             0x84
     };
 
+    public static String[] NFC_TAGLIST = {
+            "5F2A",
+            "5F34",
+            "82",
+            "95", //
+            "9A",
+            "9C",
+            "9F02",
+            "9F03",
+            "9F10",
+            "9F1A",
+            "9F26",
+            "9F27",
+            "9F33",
+            "9F34", //
+            "9F35",
+            "9F36",
+            "9F37",
+            "9F40",
+            "9F1E",
+            "9F09",
+            "9F41",
+            "84"
+    };
+
+    public static String[] ICC_TAGLIST = {
+            "82",
+            "95",
+            "9A",
+            "9C",
+            "5F2A",
+            "5F34",
+            "9F02",
+            "9F03",
+            "9F10",
+            "9F1A",
+            "9F26",
+            "9F27",
+            "9F33",
+            "9F34",
+            "9F35",
+            "9F36",
+            "9F37",
+            "9F40",
+            "9F1E",
+            "9F09",
+            "9F41",
+            "5A",
+            "84"
+    };
+
     public static String LOG_TAG = "CARDLIB";
 
     /**

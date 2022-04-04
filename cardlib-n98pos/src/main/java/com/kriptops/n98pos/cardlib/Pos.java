@@ -46,8 +46,11 @@ import com.newpos.mposlib.util.ISOUtil;
 
 import java.lang.ref.WeakReference;
 import java.security.PrivateKey;
+import java.text.SimpleDateFormat;
 import java.util.Currency;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 
@@ -558,6 +561,10 @@ public class Pos {
         cardInfoEntity.setTrack2(data.track2);
         cardInfoEntity.setBin(data.bin);
 
+        if(cardInfoEntity.getCaptureType() != "msr") {
+            cardInfoEntity.setEmv(getEmvData(cardInfoEntity.getDataMap(), cardInfoEntity.getCaptureType() == "icc"));
+        }
+
         //data.maskedPan = Util.nvl(data.maskedPan, () -> this.readTag(0x5a));
         //data.track2Clear = Util.nvl(data.track2Clear, () -> this.readTag(0x57));
         //data.track2 = data.track2Clear;
@@ -1006,5 +1013,39 @@ public class Pos {
 
     public NpPosManager getPosManager() {
         return this.posManager;
+    }
+
+    public String getEmvData(Map<String, String> dataMap, boolean icc) {
+        String[] tags = icc ? Defaults.ICC_TAGLIST : Defaults.NFC_TAGLIST;
+        String data = "";
+        for (String tag : tags) {
+            String value = dataMap.get(tag);
+            if ("9F1A".equals(tag)) {
+                // country code override
+                if ("0840".equals(value)) {
+                    value = "0604";
+                }
+            } else if ("5A".equals(tag)) {
+                while (value.endsWith("FF")) {
+                    value = value.substring(0, value.length() - 2);
+                }
+            } else if ("9F40".equals(tag)) {
+                if (value == null) {
+                    value = "F000F0F001";
+                }
+            } else if ("9A".equals(tag)) {
+                String today = new SimpleDateFormat("yyMMdd").format(new Date());
+                if (!today.equals(value)) {
+                    value = today;
+                }
+            }
+            if (value == null) {
+                continue;
+            }
+            String len = "00" + Integer.toString(value.length() / 2, 16);
+            len = len.substring(len.length() - 2);
+            data += (tag + len + value);
+        }
+        return data;
     }
 }
