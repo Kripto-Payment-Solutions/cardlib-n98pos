@@ -355,7 +355,7 @@ public class MainActivity extends AppCompatActivity{
     public void btn_set_time(View btn){
         String dateNow = this.dateTime.getText().toString();
         LogUtil.d("DateNow for Device", dateNow);
-        getPos().getPosManager().setupSystemDate("20220405000000"); // testeamos asi igaul genera error
+        getPos().getPosManager().setupSystemDate(dateNow); // testeamos asi igaul genera error
     }
 
     public void print(Printer printer) {

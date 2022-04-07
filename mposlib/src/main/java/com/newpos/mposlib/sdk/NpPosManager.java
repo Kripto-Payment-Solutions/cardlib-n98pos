@@ -788,8 +788,8 @@ public class NpPosManager implements INpPosControler {
         public final static int VOID = 1;
         public final static int GET_CARD_NUMBER = 2;
     }
-    private void processEMVtag( byte[] result )
-    {
+    
+    private void processEMVtag( byte[] result ){
         LogUtil.e("test readcard ="+ISOUtil.byte2hex(result));
         Map<String, String> dataMap = TlvUtil.tlvToMap(result);
         String executeResult = (String) dataMap.get("DF75");
@@ -988,6 +988,7 @@ public class NpPosManager implements INpPosControler {
             return;
         }
     }
+
     private void getIcCard(final CardReadEntity cardReadEntity) throws SDKException {
         if (mListener != null) {
             mListener.onDetachedIC();
