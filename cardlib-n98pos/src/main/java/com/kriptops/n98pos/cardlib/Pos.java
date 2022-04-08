@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.core.content.ContextCompat;
 
@@ -103,8 +102,6 @@ public class Pos {
                     ResponsePos response = new ResponsePos();
                     response.setNameEvent("onDeviceConnected");
                     response.setMessage(messageShow);
-
-                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
                     raiseSuccess("onDeviceConnected", response);
                 }
             });
@@ -121,8 +118,6 @@ public class Pos {
                     ResponsePos response = new ResponsePos();
                     response.setNameEvent("onDeviceDisConnected");
                     response.setMessage(messageShow);
-
-                    Toast.makeText(context, messageShow, Toast.LENGTH_SHORT).show();
                     raiseSuccess("onDeviceDisConnected", response);
 
                 }
@@ -344,7 +339,6 @@ public class Pos {
                 @Override
                 public void run() {
                     Log.d("Pos","onReceiveErrorCode()");
-                    Toast.makeText(posApp.getApplicationContext(), "[onReceiveErrorCode]: " + message, Toast.LENGTH_SHORT).show();
                     raiseError("onReceiveErrorCode", message);
                 }
             });
@@ -526,7 +520,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("not_set_aids", messageShow);
         }
     }
@@ -659,7 +652,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }
@@ -672,7 +664,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }
@@ -723,7 +714,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }
@@ -746,7 +736,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }
@@ -760,7 +749,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }
@@ -775,7 +763,6 @@ public class Pos {
         }else{
             Context context = posApp.getApplicationContext();
             String messageShow = context.getText(R.string.device_not_connect).toString();
-            Toast.makeText(this.posApp.getApplicationContext(), messageShow, Toast.LENGTH_SHORT).show();
             raiseWarning("device_not_connect", messageShow);
         }
     }

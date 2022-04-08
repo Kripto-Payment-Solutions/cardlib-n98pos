@@ -477,6 +477,14 @@ public class MainActivity extends AppCompatActivity{
                         byte[] module           = publickey.getModulus().toByteArray();
                         LogUtil.e("module ="+ISOUtil.byte2hex(module));
                         getPos().getPosManager().getTransportSessionKey(ISOUtil.byte2hex(module,1,module.length-1));//128 ->256
+
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                LogUtil.d("onDeviceConnected","onDeviceConnected()");
+                                Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } catch (Exception e) {
                         e.printStackTrace();
                         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -492,6 +500,14 @@ public class MainActivity extends AppCompatActivity{
                 case "onDeviceDisConnected":
                     btnConnectDevice.setText("Connect Device");
                     lConnectDevice = false;
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onDeviceDisConnected","onDeviceDisConnected()");
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                     break;
 
                 case "onGetTransportSessionKey":
@@ -594,7 +610,6 @@ public class MainActivity extends AppCompatActivity{
                             LogUtil.d("onCancelReadCard",responsePos.getMessage());
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
                             log.setText(responsePos.getMessage());
-
                         }
                     });
 
