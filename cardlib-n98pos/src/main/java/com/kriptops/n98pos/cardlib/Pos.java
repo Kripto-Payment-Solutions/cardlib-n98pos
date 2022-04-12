@@ -553,6 +553,7 @@ public class Pos {
         data.bin = data.maskedPan.substring(0, 6);
 
         if(cardInfoEntity.getCaptureType() == "msr") {
+            data.track2 = data.track2.replace('=', 'D');
             byte[] dataB = StringUtil.str2BCD(data.track2);
             data.track2 = StringUtil.byte2HexStr(dataB);
         }
@@ -713,7 +714,8 @@ public class Pos {
             //0x01 mag 0x02 icc  0x04 nfc
             //cardReadEntitys.setReadCardType(0x04);
             //cardReadEntitys.setReadCardType(0x01 | 0x02 );
-            cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            //cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            cardReadEntitys.setReadCardType(0x01);
             cardReadEntitys.setCurrency(currency); // 9F1A Transaction Country Code -> 0604 default soles
             cardReadEntitys.setTerminalCoutryCode("0604");  //5f2a Terminal Country Code -> 0604 default peru
             cardReadEntitys.setTradeType(TradeType.SALE);
