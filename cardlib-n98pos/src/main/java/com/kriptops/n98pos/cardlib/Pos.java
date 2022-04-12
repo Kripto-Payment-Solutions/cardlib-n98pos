@@ -42,6 +42,8 @@ import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.InputInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
 import com.newpos.mposlib.util.ISOUtil;
+import com.newpos.mposlib.util.LogUtil;
+import com.newpos.mposlib.util.StringUtil;
 
 import java.lang.ref.WeakReference;
 import java.security.PrivateKey;
@@ -549,6 +551,11 @@ public class Pos {
         data.track2 = this.posOptions.getTrack2FitMode().fit(data.track2);
         data.track2 = this.posOptions.getTrack2PaddingMode().pad(data.track2);
         data.bin = data.maskedPan.substring(0, 6);
+
+        if(cardInfoEntity.getCaptureType() == "msr") {
+            byte[] dataB = StringUtil.str2BCD(data.track2);
+            data.track2 = StringUtil.byte2HexStr(dataB);
+        }
 
         cardInfoEntity.setTrack2(data.track2);
         cardInfoEntity.setBin(data.bin);
