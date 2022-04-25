@@ -628,6 +628,26 @@ public class MainActivity extends AppCompatActivity{
                         }
                     });
                     break;
+
+                case "onAddAidSuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onAddAidSuccess",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
+
+                case "onAddRidSuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onAddRidSuccess",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    break;
             }
         });
     }

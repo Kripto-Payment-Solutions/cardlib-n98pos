@@ -180,12 +180,16 @@ public class Pos {
             ResponsePos response = new ResponsePos();
             response.setNameEvent("onAddAidSuccess");
             response.setMessage(context.getText(R.string.add_aid_success).toString());
-            raiseSuccess("onUpdateWorkingKeySuccess", response);
+            raiseSuccess("onAddAidSuccess", response);
         }
 
         @Override
         public void onAddRidSuccess() {
-
+            Context context = posApp.getApplicationContext();
+            ResponsePos response = new ResponsePos();
+            response.setNameEvent("onAddRidSuccess");
+            response.setMessage(context.getText(R.string.add_rid_success).toString());
+            raiseSuccess("onAddRidSuccess", response);
         }
 
         @Override
