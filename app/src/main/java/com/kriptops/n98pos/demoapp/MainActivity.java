@@ -635,6 +635,7 @@ public class MainActivity extends AppCompatActivity{
                         public void run() {
                             LogUtil.d("onAddAidSuccess",responsePos.getMessage());
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            log.setText(responsePos.getMessage());
                         }
                     });
                     break;
@@ -645,6 +646,7 @@ public class MainActivity extends AppCompatActivity{
                         public void run() {
                             LogUtil.d("onAddRidSuccess",responsePos.getMessage());
                             Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            log.setText(responsePos.getMessage());
                         }
                     });
                     break;
