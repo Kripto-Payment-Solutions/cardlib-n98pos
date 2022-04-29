@@ -1,5 +1,7 @@
 package com.newpos.mposlib.sdk;
 
+import static android.content.ContentValues.TAG;
+
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.SystemClock;
@@ -590,6 +592,7 @@ public class NpPosManager implements INpPosControler {
                     mContext.getString(R.string.device_get_battery_error_desc));
         }
     }
+
     public void readCard_UPTS(final CardReadEntity cardReadEntity) {
         try {
    //         checkEmvParams();
@@ -663,6 +666,7 @@ public class NpPosManager implements INpPosControler {
         }
 
     }
+
     @Override
     public void readCard(final CardReadEntity cardReadEntity) {
         try {
@@ -1188,7 +1192,9 @@ public class NpPosManager implements INpPosControler {
                         }
 
                         String tagDF78 = dataMap.get("DF78");
+                        String tagDF79 = dataMap.get("DF79");
 
+                        Log.d(TAG, "DF79: "+tagDF79);
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
                             String random = pan.substring(pan.length() - 8, pan.length());
@@ -1197,6 +1203,7 @@ public class NpPosManager implements INpPosControler {
                             cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
                             cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
                             cardInfoEntity.setKsn(random);
+                            cardInfoEntity.setEncryptPin(tagDF79);
                         } catch (Throwable e) {
                             e.printStackTrace();
                         }
@@ -1422,6 +1429,8 @@ public class NpPosManager implements INpPosControler {
                             packLen = TlvUtil.pack_tlv_data("9F63", tag9F63, ret);
                             filed55.append(StringUtil.bytes2HexStr(ret, 0, packLen));
                         }
+                        String tagDF79 = dataMap.get("DF79");
+                        Log.d(TAG, "DF79: "+tagDF79);
 
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
@@ -1431,6 +1440,7 @@ public class NpPosManager implements INpPosControler {
                             cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
                             cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
                             cardInfoEntity.setKsn(random);
+                            cardInfoEntity.setEncryptPin(tagDF79);
                         } catch (Throwable e) {
                             e.printStackTrace();
                         }
