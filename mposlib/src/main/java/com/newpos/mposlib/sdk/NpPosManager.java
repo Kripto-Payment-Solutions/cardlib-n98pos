@@ -1198,10 +1198,15 @@ public class NpPosManager implements INpPosControler {
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
                             String random = pan.substring(pan.length() - 8, pan.length());
-                            DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
-                            cardInfoEntity.setTusn(deviceSN.getTusn());
-                            cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
-                            cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
+
+                            try {
+                                DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
+                                cardInfoEntity.setTusn(deviceSN.getTusn());
+                                cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
+                                cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
+                            }catch(SDKException ex){
+                                Log.e("Error getDeviceSN", ex.getMessage());
+                            }
                             cardInfoEntity.setKsn(random);
                             cardInfoEntity.setEncryptPin(tagDF79);
                         } catch (Throwable e) {
@@ -1435,10 +1440,14 @@ public class NpPosManager implements INpPosControler {
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
                         try {
                             String random = pan.substring(pan.length() - 8);
-                            DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
-                            cardInfoEntity.setTusn(deviceSN.getTusn());
-                            cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
-                            cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
+                            try {
+                                DeviceSN deviceSN = Command.getDeviceSn(random.getBytes());
+                                cardInfoEntity.setTusn(deviceSN.getTusn());
+                                cardInfoEntity.setEncryptedSN(deviceSN.getEncryptTusn());
+                                cardInfoEntity.setDeviceType(deviceSN.getDeviceType());
+                            }catch(SDKException ex){
+                                Log.e("Error getDeviceSN", ex.getMessage());
+                            }
                             cardInfoEntity.setKsn(random);
                             cardInfoEntity.setEncryptPin(tagDF79);
                         } catch (Throwable e) {
@@ -1969,8 +1978,10 @@ public class NpPosManager implements INpPosControler {
             if (LogUtil.DEBUG) {
                 e.printStackTrace();
             }
-            //                onError(ERRORS.DEVICE_CALC_MAC_ERROR,
-//                        ERRORS.DEVICE_CALC_MAC_ERROR_DESC);
+
+            //onError(ERRORS.DEVICE_CALC_MAC_ERROR,
+            //ERRORS.DEVICE_CALC_MAC_ERROR_DESC);
+
             onError(ERRORS.DEVICE_CALC_MAC_ERROR,
                     mContext.getString(R.string.device_calc_mac_error_desc));
         }
