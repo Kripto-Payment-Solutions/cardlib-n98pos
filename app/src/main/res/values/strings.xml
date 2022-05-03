@@ -15,7 +15,9 @@
     <string name="btn_encrypt_data">E. Data</string>
     <string name="btn_set_time">Set Date</string>
     <string name="btn_input_pin">I. Pin</string>
-    <string name="btn_load_param">LD. A _ C</string>
+    <string name="btn_load_param_aid">Load Aid</string>
+    <string name="btn_clear_param">Clear A_C</string>
+    <string name="btn_load_param_capk">Load Capk</string>
     <string name="get_device_info">Get Device Info</string>
     <string name="add_aid_success">Add AID Success</string>
     <string name="btn_imprimir">Imprimir</string>

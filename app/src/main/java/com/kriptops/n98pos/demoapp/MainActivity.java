@@ -317,10 +317,16 @@ public class MainActivity extends AppCompatActivity{
         getPos().inputPin(this.pan.getText().toString());
     }
 
-    public void btn_load_param(View btn){
-        getPos().clearAID_RID();
+    public void btn_load_param_aid(View btn){
         getPos().loadAidparam(Defaults.AIDS);
+    }
+
+    public void btn_load_param_capk(View btn){
         getPos().loadCapkparam(Defaults.CAPKS);
+    }
+
+    public void btn_clear_param(View btn){
+        getPos().clearAID_RID();
     }
 
     public void btn_encriptar(View btn) {
