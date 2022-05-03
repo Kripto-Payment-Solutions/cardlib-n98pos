@@ -970,7 +970,7 @@ public class Pos {
                 }
             } else if ("9F40".equals(tag)) {
                 if (value == null) {
-                    value = "F000F0F001";
+                    value = "FF80F0A001";
                 }
             }
             if (value == null) {
