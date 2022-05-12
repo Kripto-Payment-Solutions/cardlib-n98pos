@@ -1019,18 +1019,28 @@ public class NpPosManager implements INpPosControler {
                 Map<String, String> dataMap = TlvUtil.tlvToMap(result);
                 String pan = TlvUtil.tlvToMap(result).get("5A");
                 String aid = TlvUtil.tlvToMap(result).get("9F06");
+                String track2Data = TlvUtil.tlvToMap(result).get("57");
                 if (pan != null) {
                     pan = pan.replace("F", "");
-                    if (mListener != null) {
-                        CardInfoEntity cardInfoEntity = new CardInfoEntity();
-                        cardInfoEntity.setCardType(CardType.IC_CARD);
-                        cardInfoEntity.setCardNumber(pan);
-                        cardInfoEntity.setMaskedPan(pan);
-                        cardInfoEntity.setAid(aid);
-                        mListener.onGetReadCardInfo(cardInfoEntity);
-                        return;
+                    if (track2Data == null) {
+                        track2Data = pan + "D" + "4912" + "000" + "0" + "0000" + "000";
+                        track2Data = FitMode.F_FIT.fit(track2Data);
+                        track2Data = PaddingMode.PKCS5.pad(track2Data);
+                        dataMap.put("57", track2Data);
                     }
                 }
+                if (mListener != null) {
+                    CardInfoEntity cardInfoEntity = new CardInfoEntity();
+                    cardInfoEntity.setCardType(CardType.IC_CARD);
+                    cardInfoEntity.setCardNumber(pan);
+                    cardInfoEntity.setMaskedPan(pan);
+                    cardInfoEntity.setAid(aid);
+                    cardInfoEntity.setDataMap(dataMap);
+                    cardInfoEntity.setTrack2(track2Data);
+                    mListener.onGetReadCardInfo(cardInfoEntity);
+                    return;
+                }
+
                 throw new SDKException(SDKException.ERR_CODE_COMMUNICATE_ERROR);
             } else {
                 if (mListener != null) {
