@@ -330,11 +330,11 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_read_card(View btn){
-        getPos().beginTransaction( // ete metodo se llama en cada transaccion
+        getPos().beginReadCard( // ete metodo se llama en cada transaccion
                 "220401", // fecha en formato
                 "030800",
                 "00000001",
-                "0000000000001",
+                "0000000000000",
                 "0604"
                 //,false //agregar para hacer el cashback
         );

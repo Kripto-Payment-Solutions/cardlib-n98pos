@@ -1006,7 +1006,6 @@ public class NpPosManager implements INpPosControler {
             map.put("5F2A",cardReadEntity.getCurrency());//transaction currency code    //Default Prov 0840
             map.put("9F41","00000001");
             map.put("5C","9F119F129B50");
-
         } else {
             map.put("9C", "F1");
             map.put("9F02", "000000000000");
@@ -1037,6 +1036,8 @@ public class NpPosManager implements INpPosControler {
                     cardInfoEntity.setAid(aid);
                     cardInfoEntity.setDataMap(dataMap);
                     cardInfoEntity.setTrack2(track2Data);
+                    cardInfoEntity.setCaptureType("icc");
+                    cardInfoEntity.setTradeType(cardReadEntity.getTradeType());
                     mListener.onGetReadCardInfo(cardInfoEntity);
                     return;
                 }
@@ -1244,6 +1245,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
+                        cardInfoEntity.setTradeType(cardReadEntity.getTradeType());
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1275,15 +1277,29 @@ public class NpPosManager implements INpPosControler {
         byte[] result = Command.executeQPBOCStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {
             if (cardReadEntity.getTradeType() == TradeType.GET_CARD_NUMBER) {
+                Map<String, String> dataMap = TlvUtil.tlvToMap(result);
                 String pan = TlvUtil.tlvToMap(result).get("5A");
                 String aid = TlvUtil.tlvToMap(result).get("9F06");
+                String track2Data = TlvUtil.tlvToMap(result).get("57");
                 if (pan != null) {
                     pan = pan.replace("F", "");
+                    if (track2Data == null) {
+                        track2Data = pan + "D" + "4912" + "000" + "0" + "0000" + "000";
+                        track2Data = FitMode.F_FIT.fit(track2Data);
+                        track2Data = PaddingMode.PKCS5.pad(track2Data);
+                        dataMap.put("57", track2Data);
+                    }
                     if (mListener != null) {
                         CardInfoEntity cardInfoEntity = new CardInfoEntity();
-                        cardInfoEntity.setCardType(CardType.RF_CARD);
+                        cardInfoEntity.setCaptureType("nfc");
+                        cardInfoEntity.setCardType(CardType.IC_CARD);
                         cardInfoEntity.setCardNumber(pan);
+                        cardInfoEntity.setMaskedPan(pan);
                         cardInfoEntity.setAid(aid);
+                        cardInfoEntity.setDataMap(dataMap);
+                        cardInfoEntity.setTrack2(track2Data);
+                        cardInfoEntity.setCaptureType("nfc");
+                        cardInfoEntity.setTradeType(cardReadEntity.getTradeType());
                         mListener.onGetReadCardInfo(cardInfoEntity);
                         return;
                     }
@@ -1486,6 +1502,7 @@ public class NpPosManager implements INpPosControler {
                         cardInfoEntity.setDataMap(dataMap);
                         cardInfoEntity.setEncryptTrack2(tagDF78);
                         cardInfoEntity.setAid(tag84);
+                        cardInfoEntity.setTradeType(cardReadEntity.getTradeType());
                         mListener.onGetReadCardInfo(cardInfoEntity);
                     }
                 } else {

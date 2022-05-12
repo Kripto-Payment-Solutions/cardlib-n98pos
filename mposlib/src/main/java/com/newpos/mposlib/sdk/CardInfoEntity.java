@@ -29,6 +29,7 @@ public class CardInfoEntity {
     private String aid;
     private String encryptTrack2;
     private Map<String, String> dataMap = new HashMap<>();
+    private int TradeType;
 
     public CardInfoEntity() {
     }
@@ -191,6 +192,14 @@ public class CardInfoEntity {
 
     public void setEncryptTrack2(String encryptTrack2) {
         this.encryptTrack2 = encryptTrack2;
+    }
+
+    public int getTradeType() {
+        return TradeType;
+    }
+
+    public void setTradeType(int tradeType) {
+        TradeType = tradeType;
     }
 
     @Override
