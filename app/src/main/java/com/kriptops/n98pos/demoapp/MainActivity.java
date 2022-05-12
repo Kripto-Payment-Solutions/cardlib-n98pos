@@ -329,6 +329,17 @@ public class MainActivity extends AppCompatActivity{
         getPos().clearAID_RID();
     }
 
+    public void btn_read_card(View btn){
+        getPos().beginTransaction( // ete metodo se llama en cada transaccion
+                "220401", // fecha en formato
+                "030800",
+                "00000001",
+                "0000000000001",
+                "0604"
+                //,false //agregar para hacer el cashback
+        );
+    }
+
     public void btn_encriptar(View btn) {
         // Log.d(Defaults.LOG_TAG, "Cifrar");
         //este primer paso es necesario porque yo tengo data ascii y no hex string

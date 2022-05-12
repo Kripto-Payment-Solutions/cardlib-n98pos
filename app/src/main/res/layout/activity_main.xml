@@ -223,6 +223,14 @@
                     android:onClick="btn_set_time"
                     android:text="@string/btn_set_time" />
 
+                <Button
+                    android:id="@+id/btn_read_card"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_read_card"
+                    android:text="@string/btn_read_card" />
+
             </LinearLayout>
 
             <TextView

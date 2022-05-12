@@ -1016,6 +1016,7 @@ public class NpPosManager implements INpPosControler {
         byte[] result = Command.executeStandardProcess(cardReadEntity.getTimeout(), mapToTlv(map));
         if (result != null) {
             if (cardReadEntity.getTradeType() == TradeType.GET_CARD_NUMBER) {
+                Map<String, String> dataMap = TlvUtil.tlvToMap(result);
                 String pan = TlvUtil.tlvToMap(result).get("5A");
                 String aid = TlvUtil.tlvToMap(result).get("9F06");
                 if (pan != null) {

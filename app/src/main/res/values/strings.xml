@@ -14,6 +14,7 @@
     <string name="btn_input_amount">I. Amount</string>
     <string name="btn_encrypt_data">E. Data</string>
     <string name="btn_set_time">Set Date</string>
+    <string name="btn_read_card">R. Card</string>
     <string name="btn_input_pin">I. Pin</string>
     <string name="btn_load_param_aid">Load Aid</string>
     <string name="btn_clear_param">Clear A_C</string>

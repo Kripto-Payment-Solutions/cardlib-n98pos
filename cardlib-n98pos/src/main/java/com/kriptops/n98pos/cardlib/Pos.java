@@ -695,20 +695,6 @@ public class Pos {
      * @param cashback indica si es una reversa
      */
     public void beginTransaction(String date, String time, String tsc, String amount, String currency, boolean cashback) {
-        /*
-        emv.reset();
-        data = new TransactionData();
-        emv.beginTransaction(
-                date,
-                time,
-                tsc,
-                amount,
-                cashback
-        );
-        */
-
-        //this.clearAIDS();
-        //this.setTagAIDs();
         if(posManager.isConnected()) {
             CardReadEntity cardReadEntitys =  new CardReadEntity();
             cardReadEntitys.setSupportFallback(false);
@@ -723,6 +709,37 @@ public class Pos {
             cardReadEntitys.setCurrency(currency); // 9F1A Transaction Country Code -> 0604 default soles
             cardReadEntitys.setTerminalCoutryCode("0604");  //5f2a Terminal Country Code -> 0604 default peru
             cardReadEntitys.setTradeType(TradeType.SALE);
+            posManager.readCard(cardReadEntitys);
+        }else{
+            Context context = posApp.getApplicationContext();
+            String messageShow = context.getText(R.string.device_not_connect).toString();
+            raiseWarning("device_not_connect", messageShow);
+        }
+    }
+
+    /**
+     * Inicia una transaccion.
+     *
+     * @param date   fecha en formato YYMM
+     * @param time   hora en formato HHMMSS
+     * @param tsc    contador de transaccion
+     * @param amount monto en formato ex2, por ejemplo 1000 representa 10.00
+     */
+    public void beginReadCard(String date, String time, String tsc, String amount, String currency) {
+        if(posManager.isConnected()) {
+            CardReadEntity cardReadEntitys =  new CardReadEntity();
+            cardReadEntitys.setSupportFallback(false);
+            cardReadEntitys.setTimeout(30);
+            cardReadEntitys.setAmount(amount); //"000000080000"
+            //cardReadEntitys.setAmount(amount);
+            //0x01 mag 0x02 icc  0x04 nfc
+            //cardReadEntitys.setReadCardType(0x04);
+            //cardReadEntitys.setReadCardType(0x01 | 0x02 );
+            cardReadEntitys.setReadCardType(0x01 | 0x02 | 0x04);
+            //cardReadEntitys.setReadCardType(0x01);
+            cardReadEntitys.setCurrency(currency); // 9F1A Transaction Country Code -> 0604 default soles
+            cardReadEntitys.setTerminalCoutryCode("0604");  //5f2a Terminal Country Code -> 0604 default peru
+            cardReadEntitys.setTradeType(TradeType.GET_CARD_NUMBER);
             posManager.readCard(cardReadEntitys);
         }else{
             Context context = posApp.getApplicationContext();
