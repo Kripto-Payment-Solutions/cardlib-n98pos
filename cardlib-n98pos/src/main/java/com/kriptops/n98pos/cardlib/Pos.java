@@ -685,6 +685,14 @@ public class Pos {
         posManager.clearRids();
     }
 
+    public void clearAids(){
+        posManager.clearAids();
+    }
+
+    public void clearRids(){
+        posManager.clearRids();
+    }
+
     /**
      * Inicia una transaccion.
      *

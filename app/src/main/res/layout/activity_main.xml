@@ -181,12 +181,12 @@
                 tools:visibility="visible">
 
                 <Button
-                    android:id="@+id/btn_clear_param"
+                    android:id="@+id/btn_clear_aids"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="8dp"
-                    android:onClick="btn_clear_param"
-                    android:text="@string/btn_clear_param" />
+                    android:onClick="btn_clear_aids"
+                    android:text="@string/btn_clear_aids" />
 
                 <Button
                     android:id="@+id/btn_load_param_aid"
@@ -230,6 +230,14 @@
                     android:layout_marginLeft="8dp"
                     android:onClick="btn_read_card"
                     android:text="@string/btn_read_card" />
+
+                <Button
+                    android:id="@+id/btn_clear_capks"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="8dp"
+                    android:onClick="btn_clear_capks"
+                    android:text="@string/btn_clear_capks" />
 
             </LinearLayout>
 

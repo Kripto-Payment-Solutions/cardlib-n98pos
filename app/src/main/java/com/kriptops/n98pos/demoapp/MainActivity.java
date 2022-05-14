@@ -325,8 +325,12 @@ public class MainActivity extends AppCompatActivity{
         getPos().loadCapkparam(Defaults.CAPKS);
     }
 
-    public void btn_clear_param(View btn){
-        getPos().clearAID_RID();
+    public void btn_clear_aids(View btn){
+        getPos().clearAids();
+    }
+
+    public void btn_clear_capks(View btn){
+        getPos().clearRids();
     }
 
     public void btn_read_card(View btn){
