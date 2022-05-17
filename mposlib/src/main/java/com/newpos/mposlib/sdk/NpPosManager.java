@@ -1023,8 +1023,8 @@ public class NpPosManager implements INpPosControler {
                     pan = pan.replace("F", "");
                     if (track2Data == null) {
                         track2Data = pan + "D" + "4912" + "000" + "0" + "0000" + "000";
-                        track2Data = FitMode.F_FIT.fit(track2Data);
-                        track2Data = PaddingMode.PKCS5.pad(track2Data);
+                        //track2Data = FitMode.F_FIT.fit(track2Data);
+                        //track2Data = PaddingMode.PKCS5.pad(track2Data);
                         dataMap.put("57", track2Data);
                     }
                 }
