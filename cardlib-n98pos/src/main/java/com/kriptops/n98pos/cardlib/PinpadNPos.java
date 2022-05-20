@@ -1,13 +1,9 @@
 package com.kriptops.n98pos.cardlib;
 
-import android.util.Log;
-
-import com.cloudpos.pinpad.KeyInfo;
-import com.kriptops.n98pos.cardlib.bridge.CloseableDeviceWrapper;
+//import com.cloudpos.pinpad.KeyInfo;
 import com.kriptops.n98pos.cardlib.crypto.PaddingMode;
 import com.kriptops.n98pos.cardlib.db.IVController;
-import com.kriptops.n98pos.cardlib.func.Consumer;
-import com.kriptops.n98pos.cardlib.tools.Util;
+        import com.kriptops.n98pos.cardlib.tools.Util;
 
 public class PinpadNPos {
     public static final String IV_DATA = "iv_data";
@@ -86,12 +82,12 @@ public class PinpadNPos {
     }
 
     public byte[] encrypt(byte[] plain) {
-        KeyInfo info = new KeyInfo(
-                2, //PINPadDevice.KEY_TYPE_MK_SK
-                Defaults.MK_SLOT, // 0
-                Defaults.UK_DATA_SLOT, // 1
-                ALG_3DES
-        );
+//        KeyInfo info = new KeyInfo(
+//                2, //PINPadDevice.KEY_TYPE_MK_SK
+//                Defaults.MK_SLOT, // 0
+//                Defaults.UK_DATA_SLOT, // 1
+//                ALG_3DES
+//        );
 
         byte[] dataIv = getIv(IV_DATA);
 

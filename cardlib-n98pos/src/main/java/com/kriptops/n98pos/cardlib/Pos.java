@@ -1,31 +1,14 @@
 package com.kriptops.n98pos.cardlib;
 
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_get_tag_data;
-
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
-import androidx.core.content.ContextCompat;
-
-import com.cloudpos.AlgorithmConstants;
-import com.cloudpos.DeviceException;
-import com.cloudpos.OperationResult;
-import com.cloudpos.jniinterface.EMVJNIInterface;
-import com.cloudpos.pinpad.KeyInfo;
-import com.cloudpos.pinpad.PINPadDevice;
-import com.cloudpos.pinpad.PINPadOperationResult;
-import com.cloudpos.printer.PrinterDevice;
-import com.kriptops.n98pos.cardlib.android.BluetoothApp;
-import com.kriptops.n98pos.cardlib.android.NpSwipe;
 import com.kriptops.n98pos.cardlib.android.PosApp;
-import com.kriptops.n98pos.cardlib.bridge.Terminal;
-import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.crypto.FitMode;
 import com.kriptops.n98pos.cardlib.crypto.PaddingMode;
 import com.kriptops.n98pos.cardlib.db.MapIVController;
@@ -36,34 +19,18 @@ import com.kriptops.n98pos.cardlib.tools.Util;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.CardReadEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
-import com.newpos.mposlib.sdk.EMVOnlineData;
-import com.newpos.mposlib.sdk.INpPosControler;
 import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.InputInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
-import com.newpos.mposlib.util.ISOUtil;
-import com.newpos.mposlib.util.LogUtil;
 import com.newpos.mposlib.util.StringUtil;
 
-import java.lang.ref.WeakReference;
-import java.security.PrivateKey;
-import java.text.SimpleDateFormat;
-import java.util.Currency;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.crypto.Cipher;
-
 public class Pos {
-
-    private final Terminal terminal;
-
     //TODO migrate to new infrastructure
     private final Emv emv;
-    private final Pinpad pinpad;
     private final PinpadNPos pinpadNPos;
-    private final Msr msr;
 
     private final PosOptions posOptions;
 
@@ -398,10 +365,6 @@ public class Pos {
 
         this.posApp = posApp;
         // inicializa el manejador de vectores de inicializacion
-        // construye el bridge al terminal
-        this.terminal = new Terminal();
-        terminal.init(posApp.getApplicationContext());
-
         this.posOptions = new PosOptions();
         this.posOptions.setIvController(Util.nvl(posOptions.getIvController(), new MapIVController()));
         this.posOptions.setTrack2FitMode(Util.nvl(posOptions.getTrack2FitMode(), FitMode.F_FIT));
@@ -413,7 +376,6 @@ public class Pos {
         this.posOptions.setMsrBinWhitelistSupplier(Util.nvl(posOptions.getMsrBinWhitelistSupplier(), Defaults.BIN_MSR_WHITELIST_SUPPLIER));
 
         //debe ir antes que la creacion del emv kernel
-        this.msr = new Msr(this.terminal.getMsr().getDevice());
         this.emv = null; //new Emv(this, posApp.getApplicationContext());
 
         this.pinpadNPos = new PinpadNPos(this.posOptions.getIvController());
@@ -421,14 +383,6 @@ public class Pos {
         this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_DATA, this.pinpadNPos.DEFAULT_IV);
         this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_PIN, this.pinpadNPos.DEFAULT_IV);
         this.pinpadNPos.setIvController(this.posOptions.getIvController());
-
-        this.pinpad = new Pinpad(this.terminal.getPinpad().getDevice(), this.posOptions.getIvController());
-        //this.withPinpad(this::configPinpad);
-
-        //carga los AID y CAPK por defecto
-        //this.setTagList(Defaults.TAG_LIST);
-        this.pinpad.setTimeout(Defaults.PINPAD_REQUEST_TIMEOUT);
-        this.setPinpadCustomUI(false);
 
         //Instanciamos el posManager(N98Pos)
         posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), mNpSwipeListener);
@@ -439,15 +393,16 @@ public class Pos {
     }
 
     public void setPinLength(int minLen, int maxLen) {
-        this.pinpad.setPinLength(minLen, maxLen);
+        //this.pinpad.setPinLength(minLen, maxLen);
     }
 
     public void setPinLength(int lenPin) {
-        this.pinpad.setPinLength(lenPin, lenPin);
+        //this.pinpad.setPinLength(lenPin, lenPin);
     }
 
     public String getSerialNumber() {
-        return this.terminal.getSerialNumber();
+        //return this.terminal.getSerialNumber();
+        return "";
     }
 
     public void configTerminal(
@@ -487,6 +442,7 @@ public class Pos {
         int las4index = panSize - 4;
         data.bin = data.maskedPan.substring(0, 6);
         data.maskedPan = "*******************".substring(0, las4index) + data.maskedPan.substring(las4index, panSize);
+        /*
         withPinpad((p) -> {
             if (data.track2 != null) {
                 //Pure unmodified track2
@@ -507,11 +463,12 @@ public class Pos {
         } else {
             raiseError("pos", "online_handler_null" );
         }
+        */
 
     }
 
     public void setPinpadTimeout(int timeout) {
-        this.pinpad.setTimeout(timeout);
+        //this.pinpad.setTimeout(timeout);
     }
 
     public void setTagList(int[] tagList) {
@@ -532,14 +489,6 @@ public class Pos {
 
     public void clearAIDS(){
         posManager.clearAids();
-    }
-
-    private void configPinpad(Pinpad pinpad) {
-        pinpad.setGUIConfiguration("sound", "true" );
-    }
-
-    public Pinpad getPinpad() {
-        return this.pinpad;
     }
 
     private void readAppData(CardInfoEntity cardInfoEntity) {
@@ -586,35 +535,6 @@ public class Pos {
         */
     }
 
-    protected String readTag(int tag) {
-        //if (isTagPresent(tag)) {
-        byte[] buffer = new byte[1024];
-        int read_length = emv_get_tag_data(tag, buffer, buffer.length);
-        if (read_length < 0) return null;
-        if (read_length == 0) return "";
-        byte[] tagData = new byte[read_length];
-        System.arraycopy(buffer, 0, tagData, 0, read_length);
-        return Util.toHexString(tagData);
-        //}
-        //return null;
-    }
-
-    /**
-     * Realiza una operacion atomica con el pinpad preservando el estado anterior.
-     * Si el pinpad se encuentra abierto mantiene la sesion de trabajo abierta.
-     *
-     * @param consumer
-     */
-    public void withPinpad(Consumer<Pinpad> consumer) {
-        boolean wasOpen = this.pinpad.isOpen();
-        try {
-            if (!wasOpen) this.getPinpad().open();
-            consumer.accept(this.getPinpad());
-        } finally {
-            if (!wasOpen) this.getPinpad().close();
-        }
-    }
-
     /**
      * Realiza una operacion atomica con el PosManager preservando el estado anterior.
      *
@@ -631,28 +551,6 @@ public class Pos {
             if (!wasConnectDevice) {
 
             }
-        }
-    }
-
-    /**
-     * Realiza una operacion atomica de impresion.
-     *
-     * @param consumer
-     */
-    public void withPrinter(Consumer<Printer> consumer) {
-        PrinterDevice device = this.terminal.getPrinter().getDevice();
-        try {
-            device.open();
-        } catch (DeviceException e) {
-            //TODO convertir en excepciones nombradas y republicar
-            // Log.d(Defaults.LOG_TAG, "No se puede abrir la impresora", e);
-            throw new RuntimeException(e);
-        }
-        consumer.accept(new Printer(device));
-        try {
-            device.close();
-        } catch (DeviceException e) {
-            // Log.d(Defaults.LOG_TAG, "No se puede cerrar la impresora", e);
         }
     }
 
@@ -812,43 +710,12 @@ public class Pos {
      * @param pan
      */
     private void waitForPinpad(String pan) {
-        pinpad.open();
-
-        if (!pinpad.listenForPinBlock(pan, this::pinpadEventResolved, this.digitsListener)) {
-            onError.accept("pin", "startFailed" );
-            pinpad.close();
-        }
-    }
-
-    private void pinpadEventResolved(OperationResult operationResult) {
-        int code = operationResult.getResultCode();
-        switch (code) {
-            case OperationResult.SUCCESS:
-                // cuando ha logrado tener el pinblock
-                PINPadOperationResult pinPadOperationResult = (PINPadOperationResult) operationResult;
-                byte[] data = pinPadOperationResult.getEncryptedPINBlock();
-                String pinblock = Util.toHexString(data);
-                this.data.pinblock = pinblock;
-                if (this.pinpadCustomUI) {
-                    if (this.onPinCaptured != null) {
-                        this.onPinCaptured.run();
-                    } else {
-                        raiseError("pin", "request_handler_null" );
-                    }
-                } else {
-                    continueAfterPin();
-                }
-                break;
-            case OperationResult.CANCEL:
-                raiseError("pin", "cancel" );
-                break;
-            case OperationResult.ERR_TIMEOUT:
-                raiseError("pin", "timeout" );
-                break;
-            default:
-                raiseError("pin", "" + code);
-                break;
-        }
+//        pinpad.open();
+//
+//        if (!pinpad.listenForPinBlock(pan, this::pinpadEventResolved, this.digitsListener)) {
+//            onError.accept("pin", "startFailed" );
+//            pinpad.close();
+//        }
     }
 
     /**
@@ -866,18 +733,6 @@ public class Pos {
             raiseError("pin", "request_handler_null" );
         } else {
             this.onPinRequested.run();
-        }
-    }
-
-    /**
-     * Se usa para continuar procesando la transaccion despues de pedir el pin.
-     */
-    public void continueAfterPin() {
-        if ("msr".equals(data.captureType)) {
-            processOnline();
-        } else {
-            EMVJNIInterface.emv_set_online_pin_entered(1);
-            this.emv.next();
         }
     }
 
@@ -943,10 +798,6 @@ public class Pos {
 
     protected boolean isPinpadCustomUI() {
         return pinpadCustomUI;
-    }
-
-    protected Msr getMsr() {
-        return msr;
     }
 
     /**

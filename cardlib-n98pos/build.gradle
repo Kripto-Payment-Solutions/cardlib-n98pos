@@ -31,7 +31,7 @@ android {
 dependencies {
 
     //libreria de wizarpos para compilar el aar
-    compileOnly files('libs/cloudpossdkV1.5.3.055_Standard.aar')
+    //compileOnly files('libs/cloudpossdkV1.5.3.055_Standard.aar')
     implementation project(path: ':mposlib')
     //Soporte de HEX Strings
     implementation 'commons-codec:commons-codec:1.15'

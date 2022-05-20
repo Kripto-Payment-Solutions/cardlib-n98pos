@@ -7,8 +7,6 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -18,7 +16,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
@@ -28,13 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kriptops.n98pos.cardlib.Defaults;
-import com.kriptops.n98pos.cardlib.EMVConfig;
-import com.kriptops.n98pos.cardlib.Pinpad;
 import com.kriptops.n98pos.cardlib.Pos;
-import com.kriptops.n98pos.cardlib.Printer;
 import com.kriptops.n98pos.cardlib.TransactionData;
-import com.kriptops.n98pos.cardlib.android.BluetoothApp;
-import com.kriptops.n98pos.cardlib.constant.Constant;
 import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
@@ -44,9 +36,7 @@ import com.kriptops.n98pos.demoapp.utils.StringUtil;
 import com.kriptops.n98pos.demoapp.utils.TDesUtil;
 import com.kriptops.n98pos.demoapp.view.ActivityCollector;
 import com.newpos.mposlib.sdk.CardInfoEntity;
-import com.newpos.mposlib.sdk.CardReadEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
-import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.NpPosManager;
 import com.newpos.mposlib.util.ISOUtil;
 
@@ -55,8 +45,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Random;
@@ -296,9 +284,6 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
-    public void updateKeys(Pinpad pinpad) {
-    }
-
     public void btn_connect_blue(View btn){
         if(!lConnectDevice){
             getPos().connectBTDevice(macAdrressN98);
@@ -347,30 +332,14 @@ public class MainActivity extends AppCompatActivity{
     public void btn_encriptar(View btn) {
         // Log.d(Defaults.LOG_TAG, "Cifrar");
         //este primer paso es necesario porque yo tengo data ascii y no hex string
-        getPos().withPinpad(this::encrypt);
+        //getPos().withPinpad(this::encrypt);
     }
 
     public void btn_encrypt_data(View btn){
-//        String track2 = this.track2.getText().toString();
-//        getPos().getPosManager().EncryptData(track2);
-
         String track2 = this.track2.getText().toString();
         String inCBC = getPos().getPosManager().EncryptDataCBC(track2);
         String inECB = getPos().getPosManager().EncryptDataECB(track2);
         this.track2.setText("CBC: " + inCBC + "\nECB: " + inECB);
-    }
-
-    public void encrypt(Pinpad pinpad) {
-        String plainText = this.plainText.getText().toString();
-        String plainHex = Util.toHexString(plainText.getBytes(), true);
-        // Log.d(Defaults.LOG_TAG, "Encriptando: " + plainHex);
-        String encrypted = getPos().getPinpad().encryptHex(plainHex);
-        this.encriptedText.setText(encrypted);
-    }
-
-    public void btn_imprimir_ticket(View btn) {
-        // Log.d(Defaults.LOG_TAG, "Imprimir Ticket");
-        getPos().withPrinter(this::print);
     }
 
     public void btn_set_time(View btn){
@@ -379,79 +348,8 @@ public class MainActivity extends AppCompatActivity{
         getPos().getPosManager().setupSystemDate(dateNow); // testeamos asi igaul genera error
     }
 
-    public void print(Printer printer) {
-        for (Printer.FontSize size : Printer.FontSize.values())
-            for (Printer.Align align : Printer.Align.values()) {
-                printer.println(size.name() + " " + align.name(), size, align);
-            }
-        printer.feedLine();
-        printer.feedLine();
-        printer.feedLine();
-        printer.feedLine();
-    }
-
     public void btn_do_trade(View view) {
-        this.log.setText("Present Card");
-
-//        CardReadEntity cardReadEntitys =  new CardReadEntity();
-//        cardReadEntitys.setSupportFallback(false);
-//        cardReadEntitys.setTimeout(30);
-//        cardReadEntitys.setAmount("000000005501");
-//        cardReadEntitys.setTradeType(0);
-//        getPos().getPosManager().readCard(cardReadEntitys);
-
-//        /*getPos().configTerminal( // este metodo se puede llamar una sola vez
-//                "PK000001", // tag 9F16 identidad del comercio
-//                "PRUEBA KRIPTO", // tag 9F4E nombre del comercio
-//                "00000001", // tag 9F1C identidad del terminal dentro del comercio (no es el serial number)
-//                "000000000000", // floor limit contactless
-//                "000000015000", // transaction limit contactless
-//                "000000015000" // cvm limit (desde que monto pasan de ser quick a full)
-//        );*/
-//        EMVConfig config = new EMVConfig();
-//        config.currencyCode = "0604";
-//        config.currencyExponent = "02";
-//        config.merchantIdentifier = "12345678";
-//        config.terminalCountryCode = "0604";
-//        config.terminalIdentification = "1234";
-//        config.terminalCapabilities = "E0F8C8";
-//        config.terminalType = "21";
-//        config.additionalTerminalCapabilities = "FF80F0A001";
-//        config.merchantNameAndLocation = "COMERCIO DE PRUEBA";
-//        config.ttq1 = "36";
-//        config.contactlessFloorLimit = "000000000000";
-//        config.contactlessCvmLimit = "000000015000";
-//        config.contactlessTransactionLimit = "009999999999";
-//        config.statusCheckSupport = "00";
-//        getPos().configTerminal(config);
-//
-//        getPos().setPinpadCustomUI(true); // cambia la pantalla de fondo cuando se solicita el uso del pinpad
-//        getPos().setOnPinRequested(this::onPinRequested);
-//        getPos().setDigitsListener(this::onPinDigit);
-//        getPos().setOnPinCaptured(this::onPinCaptured);
-//
-//        getPos().setTagList(new int[]{
-//                0x5f2a,
-//                0x82,
-//                0x95,
-//                0x9a,
-//                0x9c,
-//                0x9f02,
-//                0x9f03,
-//                0x9f10,
-//                0x9f1a,
-//                0x9f26,
-//                0x9f27,
-//                0x9f33,
-//                0x9f34,
-//                0x9f35,
-//                0x9f36,
-//                0x9f37,
-//                0x9f40
-//        });
-//        getPos().setOnError(this::onError);
-//        getPos().setGoOnline(this::online);
-//        getPos().setOnSuccess(this::onSuccess);
+        //this.log.setText("Present Card");
         getPos().beginTransaction( // ete metodo se llama en cada transaccion
                 "220401", // fecha en formato
                 "030800",
@@ -691,7 +589,7 @@ public class MainActivity extends AppCompatActivity{
         this.runOnUiThread(() -> {
             this.log.setText("pin leido seguir el flujo");
         });
-        getPos().continueAfterPin();
+        //getPos().continueAfterPin();
     }
 
     private void onPinDigit(Integer pinDigits) {

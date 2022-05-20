@@ -1,28 +1,12 @@
 package com.kriptops.n98pos.cardlib;
 
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_get_candidate_list;
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_get_tag_data;
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_is_tag_present;
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_set_candidate_list_result;
-import static com.cloudpos.jniinterface.EMVJNIInterface.emv_terminal_param_set_tlv;
-
 import android.content.Context;
-import android.util.Log;
 
-import com.cloudpos.OperationListener;
-import com.cloudpos.OperationResult;
-import com.cloudpos.jniinterface.EMVJNIInterface;
-import com.cloudpos.jniinterface.IFuntionListener;
-import com.cloudpos.msr.MSROperationResult;
-import com.cloudpos.msr.MSRTrackData;
 import com.kriptops.n98pos.cardlib.func.Consumer;
-import com.kriptops.n98pos.cardlib.kernel.CardType;
 import com.kriptops.n98pos.cardlib.kernel.Tag;
 import com.kriptops.n98pos.cardlib.kernel.TagName;
 import com.kriptops.n98pos.cardlib.tools.Util;
-import com.wizarpos.emvsample.constant.Constant;
 
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -64,6 +48,7 @@ public class Emv {
         //lib path
         String tmpEmvLibDir = getLibPath(context.getApplicationContext());
         byte[] data = tmpEmvLibDir.getBytes();
+        /*
         EMVJNIInterface.registerFunctionListener(new EmvListener());
         pos.getMsr().setListener(new MsrListener());
         try {
@@ -101,6 +86,7 @@ public class Emv {
             // Log.d(Defaults.LOG_TAG, "no se puede inicializar el kernel en loademv kernel");
             throw new RuntimeException("No se puede inicializar el kernel EMV", ex);
         }
+        */
     }
 
     private void performAntishake() {
@@ -116,11 +102,11 @@ public class Emv {
                 }
                 if (Emv.this.cardInserted) {
                     // Log.d(Defaults.LOG_TAG, "No procede NFC, otra interfaz tiene la tarjeta");
-                    EMVJNIInterface.emv_anti_shake_finish(1);
+                    //EMVJNIInterface.emv_anti_shake_finish(1);
                 } else {
                     // Log.d(Defaults.LOG_TAG, "Va adelante NFC, no se ha sensado tarjeta en ICC o MSR");
                     Emv.this.pos.beep();
-                    EMVJNIInterface.emv_anti_shake_finish(0);
+                    //EMVJNIInterface.emv_anti_shake_finish(0);
                 }
             }
         });
@@ -128,6 +114,7 @@ public class Emv {
 
     private void processCardInserted() {
         this.cardInserted = true;
+        /*
         int emvKernelType = EMVJNIInterface.get_card_type();
         // Log.d(Defaults.LOG_TAG, "CARD INSERTED " + emvKernelType);
         CardType cardType = CardType.fromEmv(emvKernelType);
@@ -138,7 +125,7 @@ public class Emv {
         pos.getMsr().close();
         // Log.d(Defaults.LOG_TAG, "Inicializar EMV Kernel para " + cardType);
         pos.data.captureType = cardType.tag;
-        /*
+
         switch (cardType) {
             case ICC:
                 //this.setTag(0x9f07, "FFC0");
@@ -149,9 +136,10 @@ public class Emv {
                 this.setTag(0x5f28, "0604");
                 break;
         }
-        */
+
         EMVJNIInterface.close_reader(cardType.close);
         EMVJNIInterface.emv_set_kernel_type(cardType.set);
+        */
         this.next();
     }
 
@@ -192,7 +180,7 @@ public class Emv {
         String tlvHex = Tag.compile(tags);
         // Log.d(Defaults.LOG_TAG, "cargando parametros " + tlvHex);
         byte[] data = Util.toByteArray(tlvHex);
-        int response = EMVJNIInterface.emv_terminal_param_set_tlv(data, data.length);
+        //int response = EMVJNIInterface.emv_terminal_param_set_tlv(data, data.length);
         // Log.d(Defaults.LOG_TAG, "respuesta de carga de parametros " + response);
     }
 
@@ -223,7 +211,7 @@ public class Emv {
         String terminalSettings = Tag.compile(tagList.toArray(new Tag[tagList.size()]));
         // Log.d("KRIPTO", "++++++++++++++++++++ SETTING TERMINAL INFO " + terminalSettings);
         byte[] buffer = Util.toByteArray(terminalSettings);
-        emv_terminal_param_set_tlv(buffer, buffer.length);
+        //emv_terminal_param_set_tlv(buffer, buffer.length);
     }
 
     /**
@@ -240,7 +228,7 @@ public class Emv {
             String amount,
             boolean cashback) {
         PosOptions options = pos.getPosOptions();
-        EMVJNIInterface.emv_trans_initialize();
+        //EMVJNIInterface.emv_trans_initialize();
         //BIENES Y SERVICIOS
         // this.setTag(0x9f07, "FFC0");
         // this.setTag(0x5f28, "0604");
@@ -250,29 +238,29 @@ public class Emv {
         pos.data.type = cashback
                 ? options.getReverseProcessingCode()
                 : options.getAuthProcessingCode();
-        EMVJNIInterface.emv_set_trans_type(pos.data.type);
+        //EMVJNIInterface.emv_set_trans_type(pos.data.type);
         this.setAmount(amount);
         this.setAmountOther("000");
 
-        EMVJNIInterface.emv_set_force_online(EMV_READER_ONLINE_ONLY);
+        //EMVJNIInterface.emv_set_force_online(EMV_READER_ONLINE_ONLY);
 
         if (!iccOpenned) {
             iccOpenned = true;
-            EMVJNIInterface.open_reader(EMV_READER_ICC);
+            //EMVJNIInterface.open_reader(EMV_READER_ICC);
             // Log.d(Defaults.LOG_TAG, "Reading Contact");
         }
 
         if (!nfcOpenned) {
             nfcOpenned = true;
-            EMVJNIInterface.emv_set_anti_shake(1);
-            EMVJNIInterface.open_reader(EMV_READER_NFC);
+            //EMVJNIInterface.emv_set_anti_shake(1);
+            //EMVJNIInterface.open_reader(EMV_READER_NFC);
             // Log.d(Defaults.LOG_TAG, "Reading Contactless");
         }
 
         if (!msrOpenned) {
             msrOpenned = true;
-            pos.getMsr().open();
-            pos.getMsr().waitForTrack();
+            //pos.getMsr().open();
+            //pos.getMsr().waitForTrack();
             // Log.d(Defaults.LOG_TAG, "Reading MSR");
         }
     }
@@ -281,24 +269,28 @@ public class Emv {
         byte[] amountBuffer = amount.getBytes();
         byte[] buffer = new byte[amount.length() + 1];
         System.arraycopy(amountBuffer, 0, buffer, 0, amountBuffer.length);
-        return EMVJNIInterface.emv_set_trans_amount(buffer);
+        //return EMVJNIInterface.emv_set_trans_amount(buffer);
+        return 1;
     }
 
     public int setAmountOther(String amount) {
         byte[] amountBuffer = amount.getBytes();
         byte[] buffer = new byte[amount.length() + 1];
         System.arraycopy(amountBuffer, 0, buffer, 0, amountBuffer.length);
-        return EMVJNIInterface.emv_set_other_amount(buffer);
+        //return EMVJNIInterface.emv_set_other_amount(buffer);
+        return 1;
     }
 
     public int setTag(int tag, String hexPayload) {
         byte[] buffer = Util.toByteArray(hexPayload);
-        return EMVJNIInterface.emv_set_tag_data(tag, buffer, buffer.length);
+        //return EMVJNIInterface.emv_set_tag_data(tag, buffer, buffer.length);
+        return 1;
     }
 
     public int next() {
         // Log.d(Defaults.LOG_TAG, "======> EMV NEXT ");
-        return EMVJNIInterface.emv_process_next();
+        //return EMVJNIInterface.emv_process_next();
+        return 1;
     }
 
     public int setCaptureType() {
@@ -307,9 +299,9 @@ public class Emv {
     }
 
     public void reset() {
-        EMVJNIInterface.close_reader(1);
-        EMVJNIInterface.close_reader(2);
-        pos.getMsr().close();
+        //EMVJNIInterface.close_reader(1);
+        //EMVJNIInterface.close_reader(2);
+        //pos.getMsr().close();
         cardInserted = false;
         iccOpenned = false;
         nfcOpenned = false;
@@ -357,6 +349,7 @@ public class Emv {
 
     private String readTags(int[] tags) {
         byte[] buffer = new byte[10240];
+        /*
         int readSize = EMVJNIInterface.emv_get_tag_list_data(
                 tags,
                 tags.length,
@@ -367,9 +360,12 @@ public class Emv {
         System.arraycopy(buffer, 0, tagsMaterial, 0, readSize);
         buffer = null;
         return Util.toHexString(tagsMaterial);
+        */
+        return "";
     }
 
     protected String readTag(int tag) {
+        /*
         if (isTagPresent(tag)) {
             byte[] buffer = new byte[1024];
             int read_length = emv_get_tag_data(tag, buffer, buffer.length);
@@ -380,203 +376,22 @@ public class Emv {
             return Util.toHexString(tagData);
         }
         return null;
+        */
+        return null;
     }
 
     private boolean isTagPresent(int tag) {
-        return emv_is_tag_present(tag) >= 0;
-    }
-
-    private class MsrListener implements OperationListener {
-
-        @Override
-        public void handleResult(OperationResult operationResult) {
-            pos.getMsr().close();
-            msrOpenned = false;
-            int code = operationResult.getResultCode();
-            switch (code) {
-                case OperationResult.SUCCESS:
-                    MSROperationResult result = (MSROperationResult) operationResult;
-                    MSRTrackData data = result.getMSRTrackData();
-                    if (data.getTrackError(1) == MSRTrackData.NO_ERROR) {
-                        cardInserted = true;
-                        pos.data.captureType = "msr";
-                        EMVJNIInterface.close_reader(0);
-                        EMVJNIInterface.close_reader(1);
-                        String track2ascii = new String(data.getTrackData(1), StandardCharsets.ISO_8859_1);
-                        String track2Hex = new String(track2ascii).trim().replace('=', 'D');
-                        pos.data.track2 = track2Hex;
-                        pos.data.maskedPan = track2Hex.split("D")[0];
-
-                        //Strip cardnumber && strip countryCode
-                        String serviceCode = track2ascii.substring(track2ascii.indexOf('='));
-                        if (track2ascii.startsWith("59")) serviceCode = serviceCode.substring(3);
-                        while (serviceCode.startsWith("="))
-                            serviceCode = serviceCode.substring(1);//remueve la fecha si no esta presente
-                        serviceCode = serviceCode.substring(0, 3);
-
-                        // beings whitelisting of card bins for msr
-                        boolean whitelisted = false;
-                        for (String bin: Emv.this.pos.getPosOptions().getMsrBinWhitelistSupplier().get()) {
-                            whitelisted = pos.data.track2.startsWith(bin);
-                            if (whitelisted) break;
-                        }
-                        if (!whitelisted) {
-                            char sc1 = serviceCode.charAt(0);
-                            switch (sc1) {
-                                case '2':
-                                case '6':
-                                    pos.raiseError("msr", "require_emv");
-                                    return;
-                                case '7':
-                                    pos.raiseError("msr", "not_available");
-                                    return;
-                            }
-                        }
-                        // ends whitelisting of card bins for msr
-
-                        // todo pin should be with bins or optional
-                        // this is for pin request
-                        char sc3 = serviceCode.charAt(2);
-                        switch (sc3) {
-                            case '3': //ATM
-                            case '4': //CASH WITHDRAWL
-                                pos.raiseError("msr", "not_available");
-                                return;
-                            case '0': //NR Pin Mandatory
-                            case '5': //G&S Pin Mandatory
-                            case '6': //NR Pin Feasible
-                            case '7': //G&S Pin Feasible
-                                //TODO RESTORE THE PIN
-                                Emv.this.requestPin();
-                                return;
-                        }
-                        // end pin request
-
-                        processOnline();
-                    }
-                    break;
-                case OperationResult.ERR_TIMEOUT:
-                    pos.raiseError("msr", "timeout");
-                    break;
-                case OperationResult.CANCEL:
-                    pos.raiseWarning("msr", "read_cancelled");
-                    break;
-                default:
-                    pos.raiseError("msr", "" + code);
-            }
-        }
-    }
-
-    private class EmvListener implements IFuntionListener {
-        @Override
-        public void emvProcessCallback(byte[] bytes) {
-            byte status = bytes[0];
-            byte code = bytes[1];
-            switch (status) {
-                case 0x00:
-                    switch (code) {
-                        case 10:
-                            pos.raiseError("emv", "nfc_icc_fallbackk");
-                            break;
-                        case 12:
-                            pos.raiseError("emv", "retry");
-                            break;
-                        case 47:
-                            pos.raiseError("emv", "terminal_not_initialized");
-                            break;
-                        default:
-                            pos.raiseError("emv", "process " + code);
-                            break;
-                    }
-                    break;
-                case 0x01:
-                    // aun hay mas pasos que hacer esperar y evaluar
-                    switch (code) {
-                        case Constant.EMV_CANDIDATE_LIST:
-                            // Log.d(Defaults.LOG_TAG, "EMV_CANDIDATE_LIST " + code);
-                            List<String> aidList = getAidList();
-                            //TODO raise an event where we can choose the app and then continue
-                            int defaultApp = 0;
-                            pos.data.selectedApp = aidList.get(defaultApp);
-                            emv_set_candidate_list_result(defaultApp);
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                        case Constant.EMV_APP_SELECTED:
-                            // Log.d(Defaults.LOG_TAG, "EMV_APP_SELECTED " + code);
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                        case Constant.EMV_READ_APP_DATA:
-                            // Log.d(Defaults.LOG_TAG, "EMV_READ_APP_DATA " + code);
-                            Emv.this.readAppData();
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                        case Constant.EMV_DATA_AUTH:
-                            // Log.d(Defaults.LOG_TAG, "EMV_DATA_AUTH " + code);
-                            pos.data.tsi = readTag(0x9b);
-                            pos.data.tvr = readTag(0x95);
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                        case Constant.EMV_OFFLINE_PIN:
-                            // Log.d(Defaults.LOG_TAG, "EMV_OFFLINE_PIN " + code);
-                            //TODO FIX OFFLINE PIN IN CASES OFFLINE IS NEEDED
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                        case Constant.EMV_ONLINE_ENC_PIN:
-                            // Log.d(Defaults.LOG_TAG, "EMV_ONLINE_ENC_PIN " + code);
-                            if (pos.data.maskedPan == null) {
-                                readAppData();
-                            }
-                            Emv.this.requestPin();
-                            break;
-                        case Constant.EMV_PROCESS_ONLINE:
-                            // Log.d(Defaults.LOG_TAG, "EMV_PROCESS_ONLINE " + code);
-                            pos.data.online = true;
-                            Emv.this.readAppData();
-                            Emv.this.processOnline();
-                            break;
-                        default:
-                            // Log.d(Defaults.LOG_TAG, "EMV STAGE " + code);
-                            Emv.this.emvCallbacks.execute(Emv.this::next);
-                            break;
-                    }
-                case 0x02:
-                    //ha terminado la transaccion
-                    // Log.d(Defaults.LOG_TAG, "TRANSACTION RESULT 2 " + code);
-                    //some offline rejections need process online anyways
-                    //TODO enviar al success o failed handler
-                    break;
-            }
-        }
-
-        @Override
-        public void cardEventOccured(int i) {
-            switch (i) {
-                case Constant.SMART_CARD_EVENT_INSERT_CARD:
-                    Emv.this.processCardInserted();
-                    break;
-                case Constant.SMART_CARD_EVENT_CONTALESS_ANTI_SHAKE:
-                    Emv.this.performAntishake();
-                    break;
-                case Constant.SMART_CARD_EVENT_REMOVE_CARD:
-                    Emv.this.pos.raiseWarning("emv", "icc_card_removed");
-                    break;
-                case Constant.SMART_CARD_EVENT_POWERON_ERROR:
-                    Emv.this.pos.raiseError("emv", "cant_init_readers");
-                case 12:
-                    Emv.this.pos.raiseWarning("emv", "nfc_card_removed");
-                    break;
-                default:
-                    Emv.this.pos.raiseError("emv", "card " + i);
-            }
-        }
+        //return emv_is_tag_present(tag) >= 0;
+        return false;
     }
 
     private static List<String> getAidList() {
         byte[] buffer = new byte[2048];
-        int read = emv_get_candidate_list(buffer, buffer.length);
+        //int read = emv_get_candidate_list(buffer, buffer.length);
         //aids is length (1 byte), value (length bytes)
         int offset = 0;
         List<String> list = new LinkedList<>();
+        /*
         while (offset < read) {
             // lee la longitud
             int length = buffer[offset];
@@ -590,6 +405,7 @@ public class Emv {
             // mueve el offset luego del aid
             offset += length;
         }
+        */
         return list;
     }
 
