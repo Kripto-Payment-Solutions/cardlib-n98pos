@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity{
     private EditText pan;
     private EditText dateTime;
     private TextView log;
+    private EditText mac;
 
     private String KEK = "";
 
@@ -77,7 +78,7 @@ public class MainActivity extends AppCompatActivity{
 
     private static final int requestCode = 1;
 
-    private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
+    // private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
 
     private NpPosManager posManager;
     private TestNpManager testNpPosManager;
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity{
         ActivityCollector.addActivity(this);
         this.masterKey = this.findViewById(R.id.txt_llave_master);
         // Setear con la configuracion de la MK de pruebas asignada
-        //this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
+        // this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
         this.masterKey.setText("A283C38D7D7366C6DEFD9B6FFBF45783");
         this.pinKey = this.findViewById(R.id.txt_llave_pin);
         this.dataKey = this.findViewById(R.id.txt_llave_datos);
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity{
         this.log = this.findViewById(R.id.txt_log);
         this.track2 = this.findViewById(R.id.txt_track2);
         this.dateTime = this.findViewById(R.id.txt_time);
+        this.mac = this.findViewById(R.id.txtMac);
 
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
 
@@ -286,6 +288,7 @@ public class MainActivity extends AppCompatActivity{
 
     public void btn_connect_blue(View btn){
         if(!lConnectDevice){
+            String macAdrressN98 = this.mac.getText().toString();
             getPos().connectBTDevice(macAdrressN98);
         }else{
             getPos().disConnectDevice();
