@@ -7,6 +7,7 @@ import android.media.ToneGenerator;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.kriptops.n98pos.cardlib.android.PosApp;
 import com.kriptops.n98pos.cardlib.crypto.FitMode;
@@ -16,12 +17,15 @@ import com.kriptops.n98pos.cardlib.func.BiConsumer;
 import com.kriptops.n98pos.cardlib.func.Consumer;
 import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
+import com.newpos.mposlib.exception.EventBusContent;
+import com.newpos.mposlib.model.EventActionInfo;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.CardReadEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
 import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.InputInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
+import com.newpos.mposlib.util.EventUtil;
 import com.newpos.mposlib.util.StringUtil;
 
 import java.util.List;
@@ -857,5 +861,33 @@ public class Pos {
             data += (tag + len + value);
         }
         return data;
+    }
+
+    public void startInputPin(EventActionInfo info){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                //SHOW TIPS
+                ResponsePos<EventActionInfo> response = new ResponsePos<EventActionInfo>();
+                response.setNameEvent("onStartInputPin");
+                response.setObjResp(info);
+                response.setMessage("Start to input PIN!!");
+                raiseSuccess("onStartInputPin", response);
+            }
+        });
+    }
+
+    public void endInputPin(EventActionInfo info){
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                //SHOW TIPS
+                ResponsePos<EventActionInfo> response = new ResponsePos<EventActionInfo>();
+                response.setNameEvent("onEndInputPin");
+                response.setObjResp(info);
+                response.setMessage("End to input PIN!!");
+                raiseSuccess("onEndInputPin", response);
+            }
+        });
     }
 }

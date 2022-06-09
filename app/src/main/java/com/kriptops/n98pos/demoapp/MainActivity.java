@@ -35,9 +35,12 @@ import com.kriptops.n98pos.demoapp.utils.RSAUtil;
 import com.kriptops.n98pos.demoapp.utils.StringUtil;
 import com.kriptops.n98pos.demoapp.utils.TDesUtil;
 import com.kriptops.n98pos.demoapp.view.ActivityCollector;
+import com.newpos.mposlib.exception.EventBusContent;
+import com.newpos.mposlib.model.EventActionInfo;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.DeviceInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
+import com.newpos.mposlib.util.EventUtil;
 import com.newpos.mposlib.util.ISOUtil;
 
 import java.security.InvalidKeyException;
@@ -54,6 +57,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import org.greenrobot.eventbus.Subscribe;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -68,6 +72,8 @@ public class MainActivity extends AppCompatActivity{
     private EditText pan;
     private EditText dateTime;
     private TextView log;
+
+    private TextView logView;
 
     private String KEK = "";
 
@@ -116,7 +122,11 @@ public class MainActivity extends AppCompatActivity{
         this.track2 = this.findViewById(R.id.txt_track2);
         this.dateTime = this.findViewById(R.id.txt_time);
 
+        this.logView = this.findViewById(R.id.txtLogView);
+
         this.btnConnectDevice = this.findViewById(R.id.btn_connect_device);
+
+        EventUtil.register(this);
 
         requestBtPermission(this, requestCode, getApplicationContext().getString(R.string.request_permission));
 
@@ -569,6 +579,26 @@ public class MainActivity extends AppCompatActivity{
                         }
                     });
                     break;
+                case "onStartInputPin":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onStartInputPin",responsePos.getMessage());
+                            //Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            logView.setText(responsePos.getMessage());
+                        }
+                    });
+                    break;
+                case "onEndInputPin":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onEndInputPin",responsePos.getMessage());
+                            //Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            logView.setText(responsePos.getMessage());
+                        }
+                    });
+                    break;
             }
         });
     }
@@ -679,6 +709,19 @@ public class MainActivity extends AppCompatActivity{
                 }
             });
             return false;
+        }
+    }
+
+    /*evenbus监听*/
+    @Subscribe
+    public void onEvent(EventActionInfo info) {
+        switch (info.getAction()) {
+            case EventBusContent.EVENT_BUS_ONLINE_PIN_START://
+                getPos().startInputPin(info);
+                break;
+            case EventBusContent.EVENT_BUS_ONLINE_PIN_END://
+                getPos().endInputPin(info);
+                break;
         }
     }
 }

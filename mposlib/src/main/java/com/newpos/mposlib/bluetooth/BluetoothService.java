@@ -27,14 +27,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.newpos.mposlib.BuildConfig;
 import com.newpos.mposlib.api.IBluetoothDevListener;
+import com.newpos.mposlib.exception.EventBusContent;
 import com.newpos.mposlib.exception.SDKException;
 import com.newpos.mposlib.impl.AckRequestMgr;
 import com.newpos.mposlib.impl.Command;
+import com.newpos.mposlib.model.EventActionInfo;
 import com.newpos.mposlib.model.Packet;
 import com.newpos.mposlib.model.ResponseData;
+import com.newpos.mposlib.util.EventUtil;
 import com.newpos.mposlib.util.LogUtil;
 import com.newpos.mposlib.util.StringUtil;
 
@@ -56,7 +60,7 @@ public class BluetoothService {
 
     private static final UUID UUID_OTHER_DEVICE =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    
+
     // Member fields
     private final BluetoothAdapter mAdapter;
     private ConnectThread mConnectThread;
@@ -87,18 +91,18 @@ public class BluetoothService {
         }
         return instance;
     }
-    
+
     // Set the current state of the chat connection
     // state : An integer defining the current connection state
     private synchronized void setBtState(int state) {
         LogUtil.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
-        
+
         // Give the new state to the Handler so the UI Activity can update
         //mHandler.obtainMessage(BluetoothState.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
-    // Return the current connection state. 
+    // Return the current connection state.
     public synchronized int getBtState() {
         return mState;
     }
@@ -354,13 +358,14 @@ public class BluetoothService {
             while (!isCancel) {
                 if (!recvBuffer.isEmpty()) {
                     byte[] data = recvBuffer.poll();
+                    LogUtil.i("DP::poll_buffer << " + StringUtil.byte2HexStr(data));
                     final Packet packet = Command.parsePacket(data);
                     if (packet != null) {
                         if (packet.isAck()) {
                             doAckResponse(packet);
                         }
                         processResponse(packet);
-                     }
+                    }
                 }
 
                 try {
@@ -529,13 +534,13 @@ public class BluetoothService {
 //                    }
 //                }
 //            } else {
-                try {
-                    mmOutStream.write(data);
-                } catch (Throwable e) {
-                    LogUtil.e("Exception during write\n" + e);
-                    setBtState(BluetoothState.STATE_NONE);
-                }
-          //  }
+            try {
+                mmOutStream.write(data);
+            } catch (Throwable e) {
+                LogUtil.e("Exception during write\n" + e);
+                setBtState(BluetoothState.STATE_NONE);
+            }
+            //  }
 
         }
 
@@ -762,10 +767,25 @@ public class BluetoothService {
 
         Command.RequestTask task = Command.I().getAndRemove(packet.getStrCommand());
         if (task != null) {
+            LogUtil.i("DP::Get Task OK <<<<<<<<<<< ");
             ResponseData responseData = new ResponseData(packet);
             task.setResponse(responseData);
         } else {
-
+            //if specific command, send tips to android
+            if(packet.getStrCommand().equals("A1FF")) {
+                byte[] result = packet.getParams();
+                if(result[0] == 0x01) {
+                    LogUtil.i("DP::Get Pin Start Tips <<<<<<<<<<< ");
+                    EventActionInfo info = new EventActionInfo(EventBusContent.EVENT_BUS_ONLINE_PIN_START);
+                    //Send eventbus msg
+                    EventUtil.post(info);
+                }else if(result[0] == 0x02) {
+                    LogUtil.i("DP::Get Pin End Tips <<<<<<<<<<< ");
+                    EventActionInfo info = new EventActionInfo(EventBusContent.EVENT_BUS_ONLINE_PIN_END);
+                    //Send eventbus msg
+                    EventUtil.post(info);
+                }
+            }
         }
     }
 }

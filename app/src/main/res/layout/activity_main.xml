@@ -249,15 +249,6 @@
                 android:visibility="gone"
                 tools:visibility="gone" />
 
-            <Button
-                android:id="@+id/btn_imprimir"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="btn_imprimir_ticket"
-                android:text="@string/btn_imprimir"
-                android:visibility="gone"
-                tools:visibility="gone" />
-
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
@@ -299,11 +290,11 @@
                 tools:visibility="gone" />
 
             <TextView
-                android:id="@+id/textView4"
+                android:id="@+id/txtLogView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Transaccion" />
+                android:text="" />
 
             <Button
                 android:id="@+id/button2"

@@ -2,6 +2,7 @@ package com.kriptops.n98pos.demoapp;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Looper;
 import android.util.Log;
 
 import com.kriptops.n98pos.cardlib.Defaults;
@@ -34,7 +35,7 @@ public class MainApp extends Application implements PosApp {
         posOptions.setAuthProcessingCode((byte) 0x00);
         posOptions.setReverseProcessingCode((byte) 0x00);
         posOptions.setAidTables(Defaults.AID_TABLES);
-//
+
         this.pos = new Pos(this, posOptions);
         this.pos.setPinLength(4);
         //this.pos.setPinLength(4, 6);
