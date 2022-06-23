@@ -163,9 +163,10 @@ public class Command {
 
         public void setResponse(ResponseData response) {
             if (future != null && this.future.cancel(true)) {
+                //LogUtil.i("DP::setResponse << " + StringUtil.byte2HexStr(response.getPacket().getCommand()));
                 this.set(response);
                 if (callback != null) {
-                    callback.onResponse(response);
+                    callback.onResponse(response);  //invalid
                 }
                 callback = null;
             }
@@ -208,25 +209,25 @@ public class Command {
 
             int length = buffer.length;
             if (length < 11) {
-               // LogUtil.d("check length fail:" +length);
+                // LogUtil.d("check length fail:" +length);
                 break;
             }
 
             // check head
             if (buffer[0] != Packet.PACKET_HEAD) {
-               // LogUtil.d("check head fail:" + buffer[0]);
+                // LogUtil.d("check head fail:" + buffer[0]);
                 break;
             }
 
             // check tail
             if (buffer[length - 2] != Packet.PACKET_TAIL) {
-               // LogUtil.d("check tail fail:" + buffer[length - 2]);
+                // LogUtil.d("check tail fail:" + buffer[length - 2]);
                 break;
             }
 
             // check LRC
             if (!StringUtil.checkCommLRC(buffer, buffer[length - 1])) {
-              //  LogUtil.d("checkCommLRC fail");
+                //  LogUtil.d("checkCommLRC fail");
                 break;
             }
 
@@ -688,7 +689,7 @@ public class Command {
     }
 
     public static boolean updateRecord(byte[] recordName, byte[] recordNo, byte[] search1, byte[] search2,
-                                byte[] content) throws SDKException {
+                                       byte[] content) throws SDKException {
         if (recordName == null || content == null || recordNo == null) {
             throw new SDKException(SDKException.ERR_CODE_PARAM_ERROR);
         } else if (recordNo.length != 4) {
@@ -890,7 +891,7 @@ public class Command {
     }
 
     public static byte[] loadMasterKey(byte KEKType, byte index, byte[] masterKey,
-                                byte checkMode, byte[] checkValue) throws SDKException {
+                                       byte checkMode, byte[] checkValue) throws SDKException {
         if (masterKey == null) {
             throw new SDKException(SDKException.ERR_CODE_PARAM_ERROR);
         }
@@ -1479,7 +1480,9 @@ public class Command {
         Future<ResponseData> future = packCommandWithResponse(packet, tmo + TimeUtils.TIME_LONG);
         ResponseData responseData = null;
         try {
+            LogUtil.i("DP::executeStandardProcess START <<<<<<<< ");
             responseData = future.get();
+            LogUtil.i("DP::executeStandardProcess End <<<<<<<< ");
         } catch (Throwable e) {
             if (LogUtil.DEBUG) {
                 e.printStackTrace();
@@ -1487,6 +1490,7 @@ public class Command {
         }
 
         if (responseData != null) {
+            LogUtil.i("DP::responseData << " + StringUtil.byte2HexStr(responseData.getPacket().getParams()));
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
                 byte[] result = responseData.getPacket().getParams();
                 int len = llvarToLen(result[0], result[1]);
@@ -1983,7 +1987,7 @@ public class Command {
     }
 
     public static boolean showQRCode(byte[] x, byte[] y, byte[] qrCodeHeight, byte[] qrCodeWidth,
-                              byte time, byte[] qrcodeDec, byte[] qrcodeData) throws SDKException {
+                                     byte time, byte[] qrcodeDec, byte[] qrcodeData) throws SDKException {
         if (x == null || y == null || qrCodeHeight == null || qrCodeWidth == null || qrcodeData == null) {
             throw new SDKException(SDKException.ERR_CODE_PARAM_ERROR);
         } else if (x.length == 2 && y.length == 2 && qrCodeHeight.length == 2 && qrCodeWidth.length == 2) {
@@ -2116,7 +2120,7 @@ public class Command {
         }
     }
 
-    public static byte setupPosDate(byte[] datetime) throws SDKException {
+    public static String setupPosDate(byte[] datetime) throws SDKException {
         Packet packet = new Packet();
         packet.setCommand(new byte[] {(byte)0X1D, 0X04});
         packet.setParams(datetime);
@@ -2133,7 +2137,7 @@ public class Command {
 
         if (responseData != null) {
             if (ResponseCode.SUCCESS.equals(responseData.getRespCode())) {
-                return 0x0b; //responseData.getPacket().getParams()[0];
+                return responseData.getPacket().getRespCode();
             } else {
                 throw new SDKException(responseData.getRespCode());
             }

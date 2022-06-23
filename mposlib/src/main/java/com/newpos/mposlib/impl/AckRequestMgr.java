@@ -152,7 +152,7 @@ public final class AckRequestMgr {
                     if (success) {
                         LogUtil.d("receive one ack response, packetID=" + packetID + " costTime=" +
                                 (System.currentTimeMillis() - sendTime) + " request=" + request +
-                                        " response=" + response);
+                                " response=" + response);
                         callback.onSuccess(response);
                     } else if (request != null && retryCount > 0) {
                         LogUtil.d("one ack request timeout, retry=" + retryCount

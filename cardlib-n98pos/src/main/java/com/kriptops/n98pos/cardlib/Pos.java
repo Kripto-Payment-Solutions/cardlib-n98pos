@@ -7,7 +7,6 @@ import android.media.ToneGenerator;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.kriptops.n98pos.cardlib.android.PosApp;
 import com.kriptops.n98pos.cardlib.crypto.FitMode;
@@ -17,7 +16,7 @@ import com.kriptops.n98pos.cardlib.func.BiConsumer;
 import com.kriptops.n98pos.cardlib.func.Consumer;
 import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
-import com.newpos.mposlib.exception.EventBusContent;
+import com.kriptops.n98pos.cardlib.utils.AssetsUtil;
 import com.newpos.mposlib.model.EventActionInfo;
 import com.newpos.mposlib.sdk.CardInfoEntity;
 import com.newpos.mposlib.sdk.CardReadEntity;
@@ -25,7 +24,6 @@ import com.newpos.mposlib.sdk.DeviceInfoEntity;
 import com.newpos.mposlib.sdk.INpSwipeListener;
 import com.newpos.mposlib.sdk.InputInfoEntity;
 import com.newpos.mposlib.sdk.NpPosManager;
-import com.newpos.mposlib.util.EventUtil;
 import com.newpos.mposlib.util.StringUtil;
 
 import java.util.List;
@@ -33,20 +31,15 @@ import java.util.Map;
 
 public class Pos {
     //TODO migrate to new infrastructure
-    private final Emv emv;
-    private final PinpadNPos pinpadNPos;
+    //private final Emv emv;
+    //private final PinpadNPos pinpadNPos;
 
     private final PosOptions posOptions;
 
-    private boolean pinpadCustomUI;
-    private Runnable onPinRequested;
-    private Runnable onPinCaptured;
     private BiConsumer<String, String> onError;
     private BiConsumer<String, String> onWarning;
     private BiConsumer<String, ResponsePos> onSuccess;
 
-    private Consumer<Integer> digitsListener;
-    private Consumer<TransactionData> goOnline;
     protected TransactionData data;
     private ToneGenerator toneGenerator = new ToneGenerator(AudioManager.STREAM_ALARM, 100);
 
@@ -261,12 +254,32 @@ public class Pos {
 
         @Override
         public void onUpdateFirmwareProcess(float percent) {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onUpdateFirmwareProcess");
+                    response.setMessage("Update Percent: " + percent);
 
+                    raiseSuccess("onUpdateFirmwareProcess", response);
+
+                }
+            });
         }
 
         @Override
         public void onUpdateFirmwareSuccess() {
+            new Handler(Looper.getMainLooper()).post(new Runnable() {
+                @Override
+                public void run() {
+                    ResponsePos response = new ResponsePos();
+                    response.setNameEvent("onUpdateFirmwareSuccess");
+                    response.setMessage("Update Firmware Success");
 
+                    raiseSuccess("onUpdateFirmwareSuccess", response);
+
+                }
+            });
         }
 
         @Override
@@ -380,13 +393,12 @@ public class Pos {
         this.posOptions.setMsrBinWhitelistSupplier(Util.nvl(posOptions.getMsrBinWhitelistSupplier(), Defaults.BIN_MSR_WHITELIST_SUPPLIER));
 
         //debe ir antes que la creacion del emv kernel
-        this.emv = null; //new Emv(this, posApp.getApplicationContext());
+        //this.emv = null; //new Emv(this, posApp.getApplicationContext());
 
-        this.pinpadNPos = new PinpadNPos(this.posOptions.getIvController());
-
-        this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_DATA, this.pinpadNPos.DEFAULT_IV);
-        this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_PIN, this.pinpadNPos.DEFAULT_IV);
-        this.pinpadNPos.setIvController(this.posOptions.getIvController());
+        //this.pinpadNPos = new PinpadNPos(this.posOptions.getIvController());
+        //this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_DATA, this.pinpadNPos.DEFAULT_IV);
+        //this.posOptions.getIvController().saveIv(this.pinpadNPos.IV_PIN, this.pinpadNPos.DEFAULT_IV);
+        //this.pinpadNPos.setIvController(this.posOptions.getIvController());
 
         //Instanciamos el posManager(N98Pos)
         posManager = NpPosManager.sharedInstance(posApp.getApplicationContext(), mNpSwipeListener);
@@ -404,79 +416,12 @@ public class Pos {
         //this.pinpad.setPinLength(lenPin, lenPin);
     }
 
-    public String getSerialNumber() {
-        //return this.terminal.getSerialNumber();
-        return "";
-    }
-
-    public void configTerminal(
-            String merchantId,
-            String merchantName,
-            String terminalId,
-            String clFloorLimit,
-            String clTransactionLimit,
-            String cvmLimit
-    ) {
-        this.emv.initParams(
-                merchantId,
-                merchantName,
-                terminalId,
-                getSerialNumber(),
-                clFloorLimit,
-                clTransactionLimit,
-                cvmLimit
-        );
-    }
-
     public void connectBTDevice(String macAddressN98){
         posManager.connectBluetoothDevice(macAddressN98);
     }
 
     public void disConnectDevice(){
         posManager.disconnectDevice();
-    }
-
-    public void configTerminal(EMVConfig config) {
-        this.emv.configTerminal(config);
-    }
-
-    protected void processOnline() {
-        // Log.d(Defaults.LOG_TAG, data.toString());
-        int panSize = data.maskedPan.length();
-        int las4index = panSize - 4;
-        data.bin = data.maskedPan.substring(0, 6);
-        data.maskedPan = "*******************".substring(0, las4index) + data.maskedPan.substring(las4index, panSize);
-        /*
-        withPinpad((p) -> {
-            if (data.track2 != null) {
-                //Pure unmodified track2
-                if (data.track2.endsWith("F" )) {
-                    data.track2 = data.track2.substring(0, data.track2.length() - 1);
-                }
-                // track2 clear no longer needed
-                // data.track2Clear = data.track2;
-            }
-            data.track2 = this.posOptions.getTrack2FitMode().fit(data.track2);
-            data.track2 = this.posOptions.getTrack2PaddingMode().pad(data.track2);
-            data.track2 = this.pinpad.encryptHex(data.track2);
-        });
-        // Log.d(Defaults.LOG_TAG, data.toString());
-        //TODO elevar a otro handler de nivel aun mas superior
-        if (goOnline != null) {
-            goOnline.accept(data);
-        } else {
-            raiseError("pos", "online_handler_null" );
-        }
-        */
-
-    }
-
-    public void setPinpadTimeout(int timeout) {
-        //this.pinpad.setTimeout(timeout);
-    }
-
-    public void setTagList(int[] tagList) {
-        this.emv.setTaglist(tagList);
     }
 
     public void setTagAIDs() {
@@ -707,57 +652,6 @@ public class Pos {
         }
     }
 
-    /// para el control del pinpad
-    /**
-     * Accede al uso del pinpad y coordina su ingreso con funciones del pos
-     *
-     * @param pan
-     */
-    private void waitForPinpad(String pan) {
-//        pinpad.open();
-//
-//        if (!pinpad.listenForPinBlock(pan, this::pinpadEventResolved, this.digitsListener)) {
-//            onError.accept("pin", "startFailed" );
-//            pinpad.close();
-//        }
-    }
-
-    /**
-     * Se usa para iniciar el proceso de pedido de pin.
-     */
-    public void callPin() {
-        String pan = this.data.maskedPan;
-        this.waitForPinpad(pan);
-    }
-
-    protected void requestPinToUser() {
-        if (!this.isPinpadCustomUI()) {
-            raiseError("pin", "custom_ui_false" );
-        } else if (this.onPinRequested == null) {
-            raiseError("pin", "request_handler_null" );
-        } else {
-            this.onPinRequested.run();
-        }
-    }
-
-    /**
-     * Configura el evento de escucha cuando se ha requerido el pin.
-     *
-     * @param onPinRequested
-     */
-    public void setOnPinRequested(Runnable onPinRequested) {
-        this.onPinRequested = onPinRequested;
-    }
-
-    /**
-     * Configura el evento de escucha cuando se ha capturado el pin.
-     *
-     * @param onPinCaptured
-     */
-    public void setOnPinCaptured(Runnable onPinCaptured) {
-        this.onPinCaptured = onPinCaptured;
-    }
-
     /**
      * Configura el evento de escucha cuando se ha generado un error.
      *
@@ -798,37 +692,6 @@ public class Pos {
     protected void raiseSuccess(String source, ResponsePos payload) {
         // Log.d(Defaults.LOG_TAG, "Success: " + source + " " + payload);
         if (this.onSuccess != null) onSuccess.accept(source, payload);
-    }
-
-    protected boolean isPinpadCustomUI() {
-        return pinpadCustomUI;
-    }
-
-    /**
-     * Indica que se usara un customUI para controlar el background del pin.
-     *
-     * @param pinpadCustomUI
-     */
-    public void setPinpadCustomUI(boolean pinpadCustomUI) {
-        this.pinpadCustomUI = pinpadCustomUI;
-    }
-
-    /**
-     * Configura el escucha de la cantidad de digitos ingresados del pin.
-     *
-     * @param digitsListener
-     */
-    public void setDigitsListener(Consumer<Integer> digitsListener) {
-        this.digitsListener = digitsListener;
-    }
-
-    /**
-     * Envia la respuesta para poder iniciar el proceso en linea.
-     *
-     * @param goOnline
-     */
-    public void setGoOnline(Consumer<TransactionData> goOnline) {
-        this.goOnline = goOnline;
     }
 
     public PosOptions getPosOptions() {
@@ -889,5 +752,18 @@ public class Pos {
                 raiseSuccess("onEndInputPin", response);
             }
         });
+    }
+
+    public void updateFirmware() {
+        //update from Assets file
+        String path_bin = Defaults.path_firmware;
+        AssetsUtil.init(posApp.getApplicationContext());
+        AssetsUtil.copyAssetsToData("N98-SDK.bin");
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                posManager.updateFirmware(path_bin+"/N98-SDK.bin");
+            }
+        }).start();
     }
 }

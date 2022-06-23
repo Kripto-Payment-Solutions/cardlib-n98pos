@@ -321,13 +321,13 @@ public class Emv {
         }
     }
 
-    private void requestPin() {
-        if (pos.isPinpadCustomUI()) {
-            pos.requestPinToUser();
-        } else {
-            pos.callPin();
-        }
-    }
+//    private void requestPin() {
+//        if (pos.isPinpadCustomUI()) {
+//            pos.requestPinToUser();
+//        } else {
+//            pos.callPin();
+//        }
+//    }
 
     private void processOnline() {
         TransactionData data = pos.data;
@@ -344,7 +344,7 @@ public class Emv {
 
         pos.data.tsiFinal = readTag(0x9b);
         pos.data.tvrFinal = readTag(0x95);
-        pos.processOnline();
+        //pos.processOnline();
     }
 
     private String readTags(int[] tags) {

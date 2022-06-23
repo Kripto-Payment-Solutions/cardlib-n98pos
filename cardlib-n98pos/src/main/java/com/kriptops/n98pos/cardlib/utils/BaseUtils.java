@@ -1,4 +1,4 @@
-package com.mpos.demo.utils;
+package com.kriptops.n98pos.cardlib.utils;
 
 import android.app.Activity;
 import android.app.Service;

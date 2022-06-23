@@ -1366,17 +1366,17 @@ public class ISOUtil {
         for (int i = 0; i < hex.length() - 1; i += 2) {
             //grab the hex in pairs
             String output = hex.substring(i, (i + 2));
-  //          LogUtil.e("output ="+output);
+            //          LogUtil.e("output ="+output);
             //convert hex to decimal
             int decimal = Integer.parseInt(output, 16);
             //convert the decimal to character
-   //         LogUtil.e("decimal ="+decimal);
- //           LogUtil.e("decimal ="+(char)decimal);
+            //         LogUtil.e("decimal ="+decimal);
+            //           LogUtil.e("decimal ="+(char)decimal);
             sb.append((char) decimal);
             temp.append(decimal);
         }
- //       LogUtil.e("sb append="+convertStringToHex(sb.toString()));
- //       LogUtil.e("temp append="+convertStringToHex(temp.toString()));
+        //       LogUtil.e("sb append="+convertStringToHex(sb.toString()));
+        //       LogUtil.e("temp append="+convertStringToHex(temp.toString()));
         return sb.toString();
     }
     /**

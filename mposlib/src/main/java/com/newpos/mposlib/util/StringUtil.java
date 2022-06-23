@@ -181,7 +181,7 @@ public class StringUtil {
         if (data == null) {
             return "";
         }
-		
+
         try {
             return new String(data, "US-ASCII");
         }  catch (Throwable e) {

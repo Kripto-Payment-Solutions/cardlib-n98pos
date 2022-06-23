@@ -3,7 +3,7 @@
  * Copyright (C) 2013 Hensence.com
  */
 
-package com.mpos.demo.utils;
+package com.kriptops.n98pos.cardlib.utils;
 
 
 

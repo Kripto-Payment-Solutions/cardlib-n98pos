@@ -1,7 +1,6 @@
 package com.kriptops.n98pos.demoapp;
 
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -26,7 +25,6 @@ import android.widget.Toast;
 
 import com.kriptops.n98pos.cardlib.Defaults;
 import com.kriptops.n98pos.cardlib.Pos;
-import com.kriptops.n98pos.cardlib.TransactionData;
 import com.kriptops.n98pos.cardlib.model.ResponsePos;
 import com.kriptops.n98pos.cardlib.tools.Util;
 import com.kriptops.n98pos.cardlib.android.PosApp;
@@ -59,7 +57,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import org.greenrobot.eventbus.Subscribe;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends BaseActivity{
 
     private EditText masterKey;
     private EditText pinKey;
@@ -257,17 +255,6 @@ public class MainActivity extends AppCompatActivity{
                 );
 
                 response[0] = npPosManager.isUpdateWorkKeys();
-
-                /*
-                response[0] = npPosManager.updateKeys(
-                        encryptPIN,
-                        PINkcv,
-                        encryptMAC,
-                        MACkcv,
-                        encryptTrack,
-                        TRACKkcv
-                );
-                */
             });
 
             this.runOnUiThread(() -> {
@@ -329,20 +316,31 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_read_card(View btn){
-        getPos().beginReadCard( // ete metodo se llama en cada transaccion
-                "220401", // fecha en formato
-                "030800",
-                "00000001",
-                "0000000000000",
-                "0604"
-                //,false //agregar para hacer el cashback
-        );
+        new Thread(new Runnable() {
+            public void run() {
+                // a potentially time consuming task
+                getPos().beginReadCard( // ete metodo se llama en cada transaccion
+                        "220401", // fecha en formato
+                        "030800",
+                        "00000001",
+                        "0000000000000",
+                        "0604"
+                        //,false //agregar para hacer el cashback
+                );
+            }
+        }).start();
+
+
     }
 
     public void btn_encriptar(View btn) {
         // Log.d(Defaults.LOG_TAG, "Cifrar");
         //este primer paso es necesario porque yo tengo data ascii y no hex string
         //getPos().withPinpad(this::encrypt);
+    }
+
+    public void btn_cancel_trade(View btn){
+        getPos().cancelTransaction();
     }
 
     public void btn_encrypt_data(View btn){
@@ -359,23 +357,26 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void btn_do_trade(View view) {
-        //this.log.setText("Present Card");
-        getPos().beginTransaction( // ete metodo se llama en cada transaccion
-                "220401", // fecha en formato
-                "030800",
-                "00000001",
-                "00000000850000",
-                "0604"
-                //,false //agregar para hacer el cashback
-        );
+
+        new Thread(new Runnable() {
+            public void run() {
+                // a potentially time consuming task
+                getPos().beginTransaction( // ete metodo se llama en cada transaccion
+                        "220401", // fecha en formato
+                        "030800",
+                        "00000001",
+                        "00000008500000",
+                        "0604"
+                        //,false //agregar para hacer el cashback
+                );
+            }
+        }).start();
+
+
     }
 
-    private void online(TransactionData data) {
-        // Log.d(Defaults.LOG_TAG, "online message " + data);
-        this.runOnUiThread(() -> {
-            //enviar a autorizar
-            this.log.setText("Online Message " + data);
-        });
+    public void btn_update_firmware(View btn){
+        getPos().updateFirmware();
     }
 
     private void onError(String source, String code) {
@@ -599,36 +600,26 @@ public class MainActivity extends AppCompatActivity{
                         }
                     });
                     break;
-            }
-        });
-    }
-
-    private void onPinRequested() {
-        // hacer con las graficas lo que se quiera luego enlazar el pin
-        // el emv thread esta fuera del main looper hay que llamar prepare para acceder a los contextos graficos o entrar al main looper
-        this.runOnUiThread(() -> {
-            this.log.setText("requiriendo el pin");
-        });
-        //esta parte inica el proceso de llamada del pin
-        getPos().callPin();
-    }
-
-    private void onPinCaptured() {
-        // hacer con las graficas lo que se quiera luego enlazar el pin
-        // el emv thread esta fuera del main looper hay que llamar prepare para acceder a los contextos graficos o entrar al main looper
-        this.runOnUiThread(() -> {
-            this.log.setText("pin leido seguir el flujo");
-        });
-        //getPos().continueAfterPin();
-    }
-
-    private void onPinDigit(Integer pinDigits) {
-        // Log.d(Defaults.LOG_TAG, "cantidad de digitos del pin " + pinDigits);
-        this.runOnUiThread(() -> {
-            if (pinDigits > 0) {
-                this.log.setText("requiriendo el pin " + "********".substring(0, pinDigits));
-            } else {
-                this.log.setText("requiriendo el pin");
+                case "onUpdateFirmwareSuccess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onUpdateFirmwareSuccess",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            logView.setText(responsePos.getMessage());
+                        }
+                    });
+                    break;
+                case "onUpdateFirmwareProcess":
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.d("onUpdateFirmwareProcess",responsePos.getMessage());
+                            Toast.makeText(getApplicationContext(), "[MainActivity]: " + responsePos.getMessage(), Toast.LENGTH_SHORT).show();
+                            logView.setText(responsePos.getMessage());
+                        }
+                    });
+                    break;
             }
         });
     }
@@ -650,14 +641,6 @@ public class MainActivity extends AppCompatActivity{
                 | InvalidKeyException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String protectKey(String suppliedKey, String data) {
-        return Util.toHexString(
-                protectKey(
-                        Util.toByteArray(suppliedKey),
-                        Util.toByteArray(data)
-                ));
     }
 
     public boolean kek_unpack(final String s){

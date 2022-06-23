@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static com.newpos.mposlib.exception.ConstantStr.DEFAULT_DATEPATTERN;
+import static com.newpos.mposlib.impl.Command.operateAID;
 import static com.newpos.mposlib.util.TlvUtil.mapToTlv;
 
 public class NpPosManager implements INpPosControler {
@@ -83,6 +84,16 @@ public class NpPosManager implements INpPosControler {
     private boolean lUpdateWorkKeys;
 
     private IBluetoothDevListener mIBluetoothDevListener = new IBluetoothDevListener() {
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+
+        @Override
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
 
         @Override
         public void onConnectedDevice(boolean isConnected) {
@@ -474,7 +485,7 @@ public class NpPosManager implements INpPosControler {
     @Override
     public void clearAids() {
         try {
-            Command.operateAID((byte) 3, null);
+            operateAID((byte) 3, null);
             if (mListener != null) {
                 mListener.onClearAids();
             }
@@ -491,7 +502,7 @@ public class NpPosManager implements INpPosControler {
     @Override
     public void addAid(String aid) {
         try {
-            boolean result = Command.operateAID((byte) 2, HexUtil.toBCD(aid));
+            boolean result = operateAID((byte) 2, HexUtil.toBCD(aid));
             if (result) {
                 if (mListener != null) {
                     mListener.onAddAidSuccess();

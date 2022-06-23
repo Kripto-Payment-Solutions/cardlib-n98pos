@@ -1,4 +1,4 @@
-package com.mpos.demo.utils;
+package com.kriptops.n98pos.cardlib.utils;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 

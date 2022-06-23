@@ -23,7 +23,7 @@ public class HexUtil {
                 continue;
             } else {
                 throw new IllegalArgumentException("无法转为可见的ASCII字符");
-             }
+            }
         }
         return buff.toString();
     }
