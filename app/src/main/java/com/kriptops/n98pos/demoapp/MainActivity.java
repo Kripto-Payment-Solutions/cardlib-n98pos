@@ -296,7 +296,14 @@ public class MainActivity extends BaseActivity{
     }
 
     public void btn_input_pin(View btn){
-        getPos().inputPin(this.pan.getText().toString());
+
+        new Thread(new Runnable() {
+            public void run() {
+                // a potentially time consuming task
+                getPos().inputPin(pan.getText().toString());
+            }
+        }).start();
+
     }
 
     public void btn_load_param_aid(View btn){
