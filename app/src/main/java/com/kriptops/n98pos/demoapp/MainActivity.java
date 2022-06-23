@@ -383,7 +383,7 @@ public class MainActivity extends BaseActivity{
     }
 
     public void btn_update_firmware(View btn){
-        getPos().updateFirmware();
+        getPos().updateFirmware(Defaults.path_firmware, "N98-SDK.bin");
     }
 
     private void onError(String source, String code) {

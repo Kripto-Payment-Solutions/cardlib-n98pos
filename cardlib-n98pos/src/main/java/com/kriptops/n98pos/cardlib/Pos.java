@@ -754,15 +754,15 @@ public class Pos {
         });
     }
 
-    public void updateFirmware() {
+    public void updateFirmware(String path, String filename) {
         //update from Assets file
         String path_bin = Defaults.path_firmware;
         AssetsUtil.init(posApp.getApplicationContext());
-        AssetsUtil.copyAssetsToData("N98-SDK.bin");
+        AssetsUtil.copyAssetsToData(filename);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                posManager.updateFirmware(path_bin+"/N98-SDK.bin");
+                posManager.updateFirmware(path + "/" + filename);
             }
         }).start();
     }
