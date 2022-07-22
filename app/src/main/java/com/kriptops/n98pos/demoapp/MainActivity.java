@@ -81,7 +81,8 @@ public class MainActivity extends BaseActivity{
 
     private static final int requestCode = 1;
 
-    private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
+    //private static final String macAdrressN98 = "18:B6:F7:0C:7B:CA";
+    private static final String macAdrressN98 = "18:B6:F7:5F:08:5F";
 
     private NpPosManager posManager;
     private TestNpManager testNpPosManager;
